@@ -1,0 +1,16 @@
+{
+  "name": "ambest-brandcom-site",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "dev": "node scripts/dev.mjs",
+    "build": "node scripts/build.mjs",
+    "validate": "node scripts/validate-artifact.mjs",
+    "check": "node scripts/check-site.mjs",
+    "cloudflare:check": "wrangler deploy --dry-run",
+    "deploy:cloudflare": "wrangler deploy"
+  },
+  "devDependencies": {
+    "wrangler": "^4.136.0"
+  }
+}
