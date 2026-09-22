@@ -1,0 +1,17 @@
+priority,topic,buyer_question,required_original_contribution,commercial_relationship,status
+P1,SEO audit versus ongoing SEO,Which engagement fits?,Approved scope comparison and decision criteria,"SEO foundation; content-led SEO",brief_only
+P1,Protecting search visibility during redesign,What must be preserved?,Real migration checklist and approved/anonymized artifacts,"Technical SEO; websites",brief_only
+P1,Preparing a video brief,What does a production company need?,Downloadable approved brief template,All video offers,brief_only
+P1,Corporate versus ad versus explainer,Which format suits the objective?,Side-by-side approved work examples,"V1;V2;V3",brief_only
+P1,What changes a video quote,Why do scopes cost differently?,Detailed scope variables,Video how it works,brief_only
+P1,PPC readiness checklist,Is the destination and tracking ready?,Practical test checklist,"PPC; websites",brief_only
+P1,Marketplace listing readiness,What should be fixed before ad spend?,Approved listing example and operations checklist,Marketplaces,brief_only
+P1,What a useful agency report should tell you,Which numbers support a decision?,Metric dictionary and labelled report layout,"Strategy; Results",brief_only
+P2,Local SEO without fake location pages,How should a real service area appear?,Eligibility and content decision process,Local SEO,brief_only
+P2,Category pages versus product pages,Where should ecommerce SEO start?,Permissioned catalogue example,Ecommerce SEO,brief_only
+P2,Turning expertise into content,What must the client contribute?,Real interview and review workflow,"Content-led SEO; content marketing",brief_only
+P2,Corporate-video approval workflow,How can late changes be reduced?,Approved review checklist,Corporate video,brief_only
+P2,Organic versus paid social,Which work belongs where?,Responsibility and measurement comparison,"Social; PPC",brief_only
+P2,Website handover checklist,What should the client own?,Actual access and ownership checklist,Websites,brief_only
+P3,Email campaign readiness,What is needed before sending?,Owner-confirmed scope and data workflow,Email,blocked_owner_input
+P3,What an AI-search claim should prove,How should the claim be evaluated?,Dated official guidance and transparent observation,"SEO; strategy",brief_only
