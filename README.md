@@ -49,7 +49,7 @@ The production routing and public-indexing switch are now enabled for the approv
 
 ## Cloudflare Worker deployment
 
-The repository includes `wrangler.jsonc` for direct deployment to Cloudflare Workers. The production configuration attaches `www.ambestbrandcom.com` and `ambestbrandcom.com` to the Worker, publishes with `PUBLIC_SITE=true`, and canonicalizes public traffic to `https://www.ambestbrandcom.com`.
+The repository includes `wrangler.jsonc` for direct deployment to Cloudflare Workers. The production configuration routes the existing proxied `www.ambestbrandcom.com` and `ambestbrandcom.com` hostnames through the Worker, publishes with `PUBLIC_SITE=true`, and canonicalizes public traffic to `https://www.ambestbrandcom.com`.
 
 ```text
 pnpm install

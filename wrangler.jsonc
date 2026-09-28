@@ -7,12 +7,12 @@
   "preview_urls": false,
   "routes": [
     {
-      "pattern": "www.ambestbrandcom.com",
-      "custom_domain": true
+      "pattern": "www.ambestbrandcom.com/*",
+      "zone_name": "ambestbrandcom.com"
     },
     {
-      "pattern": "ambestbrandcom.com",
-      "custom_domain": true
+      "pattern": "ambestbrandcom.com/*",
+      "zone_name": "ambestbrandcom.com"
     }
   ],
   "vars": {
