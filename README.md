@@ -45,11 +45,11 @@ Configure the variables listed in `.env.example` through the Sites environment i
 
 ## Production release
 
-Do not enable `PUBLIC_SITE=true` or attach a production domain until all launch conditions in `docs/launch-checklist.md` are satisfied. In particular, verify domain ownership and redirect direction, approve contact and legal text, configure and test real lead delivery, resolve or omit disputed metrics, confirm client/media permissions, apply the direct legacy redirect map on the infrastructure that receives the old hostname, preserve mail DNS records, and complete browser/accessibility checks.
+The production routing and public-indexing switch are now enabled for the approved canonical hostname. Continue using `docs/launch-checklist.md` for operational follow-up: approve contact and legal text, configure and test real lead delivery, resolve or omit disputed metrics, confirm client/media permissions, preserve mail DNS records, and complete browser/accessibility checks.
 
 ## Cloudflare Worker deployment
 
-The repository includes `wrangler.jsonc` for direct deployment to Cloudflare Workers. The checked-in configuration keeps the review build out of search indexes with `PUBLIC_SITE=false`.
+The repository includes `wrangler.jsonc` for direct deployment to Cloudflare Workers. The production configuration attaches `www.ambestbrandcom.com` and `ambestbrandcom.com` to the Worker, publishes with `PUBLIC_SITE=true`, and canonicalizes public traffic to `https://www.ambestbrandcom.com`.
 
 ```text
 pnpm install
@@ -57,5 +57,4 @@ pnpm cloudflare:check
 pnpm deploy:cloudflare
 ```
 
-Configure `TURNSTILE_SECRET_KEY` and `LEAD_WEBHOOK_URL` as encrypted Worker secrets before enabling production lead delivery. Set `PUBLIC_SITE=true` only after the production release checklist is complete.
-
+Configure `TURNSTILE_SECRET_KEY` and `LEAD_WEBHOOK_URL` as encrypted Worker secrets before enabling production lead delivery. The public site is live, but the guarded enquiry endpoint will continue to return a configuration error until those secrets are set and a test submission reaches the approved destination.

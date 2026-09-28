@@ -2,7 +2,9 @@ import { generatedPages } from "./generated-pages.js";
 import { articles, digitalServices, legacyRedirects, projects, seoOffers, videoOffers } from "./content.js";
 import { headerLogo } from "./logo-data.js";
 
-const origin = "https://ambestmedia.com";
+const canonicalHost = "www.ambestbrandcom.com";
+const apexHost = "ambestbrandcom.com";
+const origin = `https://${canonicalHost}`;
 const e = value => String(value).replace(/[&<>"']/g, char => ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[char]));
 
 const mainServices = [
@@ -42,8 +44,10 @@ function header() {
   return `<a class="skip" href="#main">Skip to content</a><header class="site-header"><div class="header-inner"><a class="brand" href="/" aria-label="Ambest Brandcom home"><img class="brand-logo" src="${headerLogo}" alt="Ambest Brandcom"></a><nav class="desktop-nav" aria-label="Primary"><a href="/">Home</a><a href="/about/">About</a><div class="nav-group"><a class="nav-parent" href="/services/ad-films-video-content/">Services</a><button class="nav-toggle" type="button" aria-label="Open Services menu" aria-expanded="false"></button><div class="nav-menu wide">${links}</div></div><a href="/work/">Work</a><a href="/blog/">Insights</a></nav><a class="button header-cta" href="/get-a-quote/">Get Custom Quote</a><button class="mobile-toggle" type="button" aria-expanded="false" aria-controls="mobile-menu">Menu</button><nav id="mobile-menu" class="mobile-panel" aria-label="Mobile primary"><a href="/">Home</a><a href="/about/">About</a><details><summary>Services</summary>${mobile}</details><a href="/work/">Work</a><a href="/blog/">Insights</a><a href="/get-a-quote/">Get Custom Quote</a></nav></div></header>`;
 }
 
-function footer() {
-  return `<footer class="footer"><div class="shell"><div class="footer-grid"><div><a class="footer-logo-panel" href="/" aria-label="Ambest Brandcom home"><img class="footer-logo" src="${headerLogo}" alt="Ambest Brandcom"></a><p>A Mumbai-rooted brand communications partner with experience across India and APAC.</p><span class="availability">Published contacts—operational status pending confirmation</span></div><div><strong>Main services</strong><a href="/services/ad-films-video-content/">Ad Films & Video Content</a><a href="/services/brand-communication-strategy/">Brand Communication & Strategy</a><a href="/services/creative-solutions/">Creative Solutions</a></div><div><strong>More services</strong><a href="/services/digital-social/">Digital & Social</a><a href="/services/website-development/">Website Development</a><a href="/services/brand-experiences-partnerships/">Brand Experiences & Partnerships</a><a href="/work/">Work</a></div><div><strong>Start</strong><a href="/about/">About</a><a href="/blog/">Insights</a><a href="/contact/">Contact</a><a href="/get-a-quote/">Get Custom Quote</a><a href="/privacy-policy/">Privacy</a></div></div><div class="fineprint"><small>Copyrights Reserved Ambest Brandcom</small><small>Private review build · no production cutover implied</small></div></div></footer>`;
+function footer(publicSite) {
+  const releaseLabel = publicSite ? "Global experience · Mumbai roots" : "Private review build · no production cutover implied";
+  const availabilityLabel = publicSite ? "Serving brands across India and APAC" : "Published contacts—operational status pending confirmation";
+  return `<footer class="footer"><div class="shell"><div class="footer-grid"><div><a class="footer-logo-panel" href="/" aria-label="Ambest Brandcom home"><img class="footer-logo" src="${headerLogo}" alt="Ambest Brandcom"></a><p>A Mumbai-rooted brand communications partner with experience across India and APAC.</p><span class="availability">${availabilityLabel}</span></div><div><strong>Main services</strong><a href="/services/ad-films-video-content/">Ad Films & Video Content</a><a href="/services/brand-communication-strategy/">Brand Communication & Strategy</a><a href="/services/creative-solutions/">Creative Solutions</a></div><div><strong>More services</strong><a href="/services/digital-social/">Digital & Social</a><a href="/services/website-development/">Website Development</a><a href="/services/brand-experiences-partnerships/">Brand Experiences & Partnerships</a><a href="/work/">Work</a></div><div><strong>Start</strong><a href="/about/">About</a><a href="/blog/">Insights</a><a href="/contact/">Contact</a><a href="/get-a-quote/">Get Custom Quote</a><a href="/privacy-policy/">Privacy</a></div></div><div class="fineprint"><small>Copyrights Reserved Ambest Brandcom</small><small>${releaseLabel}</small></div></div></footer>`;
 }
 
 function serviceCards() {
@@ -70,6 +74,7 @@ function reworkHome(html) {
 
 function rebrand(html, path, publicSite) {
   html = html
+    .replaceAll("https://ambestmedia.com", origin)
     .replaceAll("#c7ff33", "#1900f5")
     .replaceAll("#eef1e7", "#eef3ff")
     .replaceAll("font-weight:900", "font-weight:500")
@@ -79,7 +84,7 @@ function rebrand(html, path, publicSite) {
     .replaceAll("Ppc Advertising", "PPC Advertising")
     .replace("</style>", `${brandCss}</style>`)
     .replace(/<a class="skip"[\s\S]*?<\/header>/, header())
-    .replace(/<footer class="footer"[\s\S]*?<\/footer>/, footer());
+    .replace(/<footer class="footer"[\s\S]*?<\/footer>/, footer(publicSite));
   if (path === "/") html = reworkHome(html);
   if (publicSite && !["/privacy-policy/","/disclaimer/","/thank-you/"].includes(path)) html = html.replace('<meta name="robots" content="noindex,nofollow">','<meta name="robots" content="index,follow">');
   return html;
@@ -137,7 +142,11 @@ async function handleQuote(request, env) {
     const delivery = await fetch(endpoint.toString(),{method:"POST",headers:{"content-type":"application/json",...(env.LEAD_WEBHOOK_TOKEN?{authorization:`Bearer ${env.LEAD_WEBHOOK_TOKEN}`}:{})},body:JSON.stringify(record)});
     if (!delivery.ok) return json({message:"The enquiry destination did not accept the submission. Please retry or use email."},502);
   }
-  if (clean.idempotencyKey) { acceptedIds.set(clean.idempotencyKey,requestId); setTimeout(()=>acceptedIds.delete(clean.idempotencyKey),900000); }
+  if (clean.idempotencyKey) {
+    acceptedIds.set(clean.idempotencyKey,requestId);
+    const cleanup = setTimeout(()=>acceptedIds.delete(clean.idempotencyKey),900000);
+    cleanup?.unref?.();
+  }
   return json({requestId,message:"Your enquiry has been received."},202);
 }
 
@@ -156,14 +165,29 @@ export default {
     const url = new URL(request.url);
     let path = url.pathname.replace(/\/{2,}/g,"/");
     const publicSite = env.PUBLIC_SITE === "true";
+    const fileRoutes = new Set(["/api/quote","/favicon.svg","/robots.txt","/sitemap.xml"]);
+    const slashNormalizedPath = path !== "/" && !path.endsWith("/") && !fileRoutes.has(path) ? `${path}/` : path;
+    const mappedPath = legacyRedirects[slashNormalizedPath] || extraRedirects[slashNormalizedPath] || slashNormalizedPath;
+    const isProductionHost = url.hostname === canonicalHost || url.hostname === apexHost;
+    const needsProductionRedirect = isProductionHost && (url.protocol !== "https:" || url.hostname !== canonicalHost || path !== mappedPath);
+    if (["GET","HEAD"].includes(request.method) && needsProductionRedirect) {
+      url.protocol = "https:";
+      url.hostname = canonicalHost;
+      url.pathname = mappedPath;
+      if (mappedPath !== slashNormalizedPath) url.search = "";
+      return Response.redirect(url.toString(),301);
+    }
+    if (["GET","HEAD"].includes(request.method) && path !== mappedPath) {
+      url.pathname = mappedPath;
+      if (mappedPath !== slashNormalizedPath) url.search = "";
+      return Response.redirect(url.toString(),301);
+    }
+    path = mappedPath;
     if (path === "/api/quote") return handleQuote(request,env);
     if (!["GET","HEAD"].includes(request.method)) return new Response("Method not allowed",{status:405,headers:{Allow:"GET, HEAD"}});
     if (path === "/favicon.svg") return new Response(request.method==="HEAD"?null:favicon,{headers:{"content-type":"image/svg+xml","cache-control":"public,max-age=86400"}});
     if (path === "/robots.txt") { const body=publicSite?`User-agent: *\nDisallow: /thank-you/\nDisallow: /api/\nSitemap: ${origin}/sitemap.xml\n`:"User-agent: *\nDisallow: /\n"; return new Response(request.method==="HEAD"?null:body,{headers:{"content-type":"text/plain; charset=utf-8","cache-control":"public,max-age=300"}}); }
     if (path === "/sitemap.xml") { const routes=publicSite?Object.keys(generatedPages).concat(serviceRoutes).filter(route=>!["/privacy-policy/","/disclaimer/"].includes(route)):[]; const body=`<?xml version="1.0" encoding="UTF-8"?><urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">${routes.map(route=>`<url><loc>${origin}${route}</loc></url>`).join("")}</urlset>`; return new Response(request.method==="HEAD"?null:body,{headers:{"content-type":"application/xml; charset=utf-8","cache-control":"public,max-age=300"}}); }
-    if (path !== "/" && !path.endsWith("/")) { url.pathname=`${path}/`; return Response.redirect(url.toString(),308); }
-    const redirect = legacyRedirects[path] || extraRedirects[path];
-    if (redirect) { url.pathname=redirect; url.search=""; return Response.redirect(url.toString(),308); }
     const service = mainServices.find(item => path === `/services/${item.id}/`);
     let html = service ? servicePage(service,publicSite) : generatedPages[path] ? (path==="/get-a-quote/" ? quotePage(generatedPages[path],url,env,publicSite) : rebrand(generatedPages[path],path,publicSite)) : null;
     if (html) return new Response(request.method==="HEAD"?null:html,{headers:htmlHeaders});

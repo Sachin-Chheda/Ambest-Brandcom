@@ -5,8 +5,18 @@
   "compatibility_date": "2026-09-22",
   "workers_dev": true,
   "preview_urls": false,
+  "routes": [
+    {
+      "pattern": "www.ambestbrandcom.com",
+      "custom_domain": true
+    },
+    {
+      "pattern": "ambestbrandcom.com",
+      "custom_domain": true
+    }
+  ],
   "vars": {
-    "PUBLIC_SITE": "false"
+    "PUBLIC_SITE": "true"
   },
   "observability": {
     "enabled": true

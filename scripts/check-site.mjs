@@ -23,7 +23,7 @@ for (const route of requiredRoutes) {
   if (!title) failures.push(`${route}: missing title`);
   else if (titles.has(title)) failures.push(`${route}: duplicate title with ${titles.get(title)}`);
   else titles.set(title, route);
-  if (!html.includes('<link rel="canonical" href="https://ambestmedia.com')) failures.push(`${route}: incorrect canonical host`);
+  if (!html.includes('<link rel="canonical" href="https://www.ambestbrandcom.com')) failures.push(`${route}: incorrect canonical host`);
   if (!html.includes('<meta name="robots" content="noindex,nofollow">')) failures.push(`${route}: private preview must be noindex`);
   if ((html.match(/<h1[ >]/g) || []).length !== 1) failures.push(`${route}: expected one H1`);
   if (!html.includes('class="skip"') || !html.includes('<main id="main">') || !html.includes('aria-label="Primary"')) failures.push(`${route}: missing shared navigation landmarks`);
@@ -62,11 +62,29 @@ if (!workHtml.includes('.case-poster{background:linear-gradient') || !workHtml.i
 const missing = await request("/definitely-missing/");
 if (missing.status !== 404) failures.push(`404 check: got ${missing.status}`);
 const redirect = await request("/about-us/", {redirect:"manual"});
-if (redirect.status !== 308 || !redirect.headers.get("location")?.endsWith("/about/")) failures.push("legacy redirect check failed");
+if (redirect.status !== 301 || !redirect.headers.get("location")?.endsWith("/about/")) failures.push("legacy redirect check failed");
 const privateMap = await request("/sitemap.xml");
 if ((await privateMap.text()).includes("<url>")) failures.push("private sitemap should contain no URLs");
 const publicMap = await request("/sitemap.xml", {}, {PUBLIC_SITE:"true"});
-if (!(await publicMap.text()).includes("/seo/how-it-works/")) failures.push("public sitemap missing required route");
+const publicMapText = await publicMap.text();
+if (!publicMapText.includes("/seo/how-it-works/")) failures.push("public sitemap missing required route");
+if (!publicMapText.includes("https://www.ambestbrandcom.com/seo/how-it-works/")) failures.push("public sitemap uses the wrong canonical host");
+const publicRobots = await (await request("/robots.txt", {}, {PUBLIC_SITE:"true"})).text();
+if (!publicRobots.includes("Sitemap: https://www.ambestbrandcom.com/sitemap.xml") || publicRobots.includes("Disallow: /\n")) failures.push("public robots.txt is not crawlable or uses the wrong sitemap host");
+
+const canonicalCases = [
+  ["https://ambestbrandcom.com/", "https://www.ambestbrandcom.com/"],
+  ["http://www.ambestbrandcom.com/", "https://www.ambestbrandcom.com/"],
+  ["http://ambestbrandcom.com/about-us", "https://www.ambestbrandcom.com/about/"],
+];
+for (const [input, expected] of canonicalCases) {
+  const response = await worker.fetch(new Request(input, {redirect:"manual"}), {PUBLIC_SITE:"true"}, {});
+  if (response.status !== 301 || response.headers.get("location") !== expected) failures.push(`canonical redirect failed: ${input}`);
+}
+const canonicalHome = await worker.fetch(new Request("https://www.ambestbrandcom.com/"), {PUBLIC_SITE:"true"}, {});
+if (canonicalHome.status !== 200) failures.push(`canonical home: expected 200, got ${canonicalHome.status}`);
+const canonicalHomeHtml = await canonicalHome.text();
+if (!canonicalHomeHtml.includes('<meta name="robots" content="index,follow">') || canonicalHomeHtml.includes("Private review build") || canonicalHomeHtml.includes("pending confirmation")) failures.push("canonical home is not in public release mode");
 
 const invalid = await request("/api/quote", {method:"POST",headers:{"content-type":"application/json"},body:"{}"}, {DEVELOPMENT_MODE:"true"});
 if (invalid.status !== 422) failures.push(`invalid form: expected 422, got ${invalid.status}`);
