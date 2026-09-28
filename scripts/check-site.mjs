@@ -84,7 +84,7 @@ for (const [input, expected] of canonicalCases) {
 const canonicalHome = await worker.fetch(new Request("https://www.ambestbrandcom.com/"), {PUBLIC_SITE:"true"}, {});
 if (canonicalHome.status !== 200) failures.push(`canonical home: expected 200, got ${canonicalHome.status}`);
 const canonicalHomeHtml = await canonicalHome.text();
-if (!canonicalHomeHtml.includes('<meta name="robots" content="index,follow">') || canonicalHomeHtml.includes("Private review build") || canonicalHomeHtml.includes("pending confirmation")) failures.push("canonical home is not in public release mode");
+if (!canonicalHomeHtml.includes('<meta name="robots" content="index,follow">') || canonicalHomeHtml.includes("Private review build") || /preview|pending confirmation|subject to confirmation/i.test(canonicalHomeHtml)) failures.push("canonical home is not in public release mode");
 
 const invalid = await request("/api/quote", {method:"POST",headers:{"content-type":"application/json"},body:"{}"}, {DEVELOPMENT_MODE:"true"});
 if (invalid.status !== 422) failures.push(`invalid form: expected 422, got ${invalid.status}`);

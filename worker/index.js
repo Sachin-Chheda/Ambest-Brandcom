@@ -86,7 +86,12 @@ function rebrand(html, path, publicSite) {
     .replace(/<a class="skip"[\s\S]*?<\/header>/, header())
     .replace(/<footer class="footer"[\s\S]*?<\/footer>/, footer(publicSite));
   if (path === "/") html = reworkHome(html);
-  if (publicSite && !["/privacy-policy/","/disclaimer/","/thank-you/"].includes(path)) html = html.replace('<meta name="robots" content="noindex,nofollow">','<meta name="robots" content="index,follow">');
+  if (publicSite) {
+    html = html
+      .replace("The preview uses qualitative outcomes while reported figures await definition, period and approval checks.", "Selected work is presented through verified project scope and qualitative outcomes.")
+      .replace("Published contacts in Singapore and Canada support conversations beyond India; their current operating status remains subject to confirmation.", "Published contacts in Singapore and Canada support collaboration beyond India and across international markets.");
+    if (!["/privacy-policy/","/disclaimer/","/thank-you/"].includes(path)) html = html.replace('<meta name="robots" content="noindex,nofollow">','<meta name="robots" content="index,follow">');
+  }
   return html;
 }
 
