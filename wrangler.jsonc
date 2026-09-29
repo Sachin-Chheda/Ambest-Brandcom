@@ -29,9 +29,11 @@
   "vars": {
     "PUBLIC_SITE": "true",
     "LEAD_RECIPIENT": "sachin@ambestmedia.com",
-    "LEAD_SENDER": "website@ambestbrandcom.com"
+    "LEAD_SENDER": "website@ambestbrandcom.com",
+    "TURNSTILE_SITE_KEY": "0x4AAAAAAFIsr9Ejvj4ShRSb"
   },
   "observability": {
     "enabled": true
   }
 }
+
