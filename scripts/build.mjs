@@ -10,4 +10,5 @@ for (const file of ["index.js", "content.js", "generated-pages.js", "logo-data.j
   cpSync(resolve(root, "worker", file), resolve(dist, "server", file));
 }
 cpSync(resolve(root, ".openai", "hosting.json"), resolve(dist, ".openai", "hosting.json"));
+cpSync(resolve(root, "public"), resolve(dist, "public"), { recursive: true });
 console.log(`Built ${dist}`);

@@ -1,4 +1,6 @@
 import worker from "../worker/index.js";
+import { existsSync, readdirSync } from "node:fs";
+import { resolve } from "node:path";
 
 const requiredRoutes = [
   "/", "/about/", "/contact/", "/get-a-quote/", "/privacy-policy/", "/disclaimer/",
@@ -55,10 +57,27 @@ if (!publicHomeHtml.includes('class="footer-logo"')) failures.push("footer: supp
 if (!publicHomeHtml.includes("Copyrights Reserved Ambest Brandcom") || publicHomeHtml.includes("policy-stated operator")) failures.push("footer: copyright line is incorrect");
 if (publicHomeHtml.includes("#c7ff33")) failures.push("brand palette: legacy green is still present");
 if (/font-weight:(700|800|900)/.test(publicHomeHtml)) failures.push("typography: bold font weight remains in rendered homepage CSS");
+if (!publicHomeHtml.includes("India + APAC experience") || !publicHomeHtml.includes("wider Asia-Pacific region")) failures.push("home: approved India + APAC experience copy is missing");
+if (!publicHomeHtml.includes("Singapore, Canada and the US")) failures.push("home: international touchpoints do not include the US");
+if (!publicHomeHtml.includes("youtube-nocookie.com/embed/YaaTIMUeoNs") || !publicHomeHtml.includes("2026 showreel")) failures.push("home: verified 2026 showreel embed is missing");
 const workHtml = await (await request("/work/")).text();
 if (!workHtml.includes('<a href="/work/recons-group/">Impact Created</a>') || workHtml.includes("Read the project record")) failures.push("project CTA: Recons card label was not updated");
-if (workHtml.includes("Ppc Advertising") || !workHtml.includes("PPC Advertising")) failures.push("service naming: PPC capitalization is inconsistent");
+if (workHtml.includes("Ppc Advertising")) failures.push("service naming: PPC capitalization is inconsistent");
+for (const label of ["Ad Films &amp; Video Content","Brand Communication &amp; Strategy","Creative Solutions","Digital &amp; Social","Website Development","Brand Experiences &amp; Partnerships"]) {
+  if (!workHtml.includes(label)) failures.push(`work: missing core-service classification ${label}`);
+}
+if (workHtml.includes("<span>PPC Advertising</span>")) failures.push("work: case studies still lead with performance-marketing service labels");
 if (!workHtml.includes('.case-poster{background:linear-gradient') || !workHtml.includes('color:#fff}')) failures.push("case-study cards: gradient header with white text is missing");
+if ((workHtml.match(/\/media\/case-/g) || []).length < 10) failures.push("work: all ten case-study visuals are not connected");
+for (const route of requiredRoutes.filter(route => route.startsWith("/work/") && route !== "/work/")) {
+  if (!pages.get(route)?.includes("Why this work travels")) failures.push(`${route}: global case-study positioning is missing`);
+  if (!pages.get(route)?.includes("Brand Communication &amp; Strategy") && !pages.get(route)?.includes("Creative Solutions")) failures.push(`${route}: core brand/creative service positioning is missing`);
+  if (/What can be said responsibly|This section is editorial interpretation|The scope of this evidence/.test(pages.get(route) || "")) failures.push(`${route}: internal audit language remains in the public case study`);
+}
+const filmsHtml = pages.get("/video-production/results/") || "";
+if ((filmsHtml.match(/youtube-nocookie.com\/embed\//g) || []).length < 6) failures.push("video results: six verified film embeds are missing");
+const mediaDir = resolve(import.meta.dirname, "..", "public", "media");
+if (!existsSync(mediaDir) || readdirSync(mediaDir).length < 19) failures.push("media: expected imported Ambest asset set is incomplete");
 const missing = await request("/definitely-missing/");
 if (missing.status !== 404) failures.push(`404 check: got ${missing.status}`);
 const redirect = await request("/about-us/", {redirect:"manual"});
