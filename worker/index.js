@@ -17,17 +17,19 @@ const mainServices = [
 ];
 
 const serviceRoutes = mainServices.map(service => `/services/${service.id}/`);
+const defaultLeadRecipient = "sachin@ambestmedia.com";
+const defaultLeadSender = "website@ambestbrandcom.com";
 
 const projectVisuals = {
-  "purobien-nutrition": {file:"case-purobien.jpg",label:"PN / Nutrition ecommerce",alt:"Purobien Nutrition brand and product communication",positioning:"A wellness offer made coherent across ecommerce, marketplaces, content and acquisition."},
+  "purobien-nutrition": {file:"case-purobien.webp",label:"PN / Nutrition ecommerce",alt:"Purobien Nutrition brand and product communication",positioning:"A wellness offer made coherent across ecommerce, marketplaces, content and acquisition."},
   "shreeji-woodcraft": {file:"case-shreeji.png",label:"SW / Interior and woodcraft",alt:"Shreeji Woodcraft brand communication",positioning:"An identity system translated across physical spaces, editorial communication, digital touchpoints and film."},
   "bhoomi": {file:"case-bhoomi.png",label:"B / Real estate",alt:"Bhoomi real estate brand identity",positioning:"Trust-led real-estate positioning carried consistently from identity and launch communication into digital journeys."},
   "bryan-candy": {file:"case-bryan-candy.png",label:"B&amp; / Beauty and bath products",alt:"Bryan and Candy beauty brand campaign",positioning:"A distinctive beauty brand expressed through campaign content, social media and marketplace communication."},
   "dr-amyn-rajani": {file:"case-dr-amyn.jpg",label:"DA / Healthcare practice",alt:"Dr Amyn Rajani healthcare communication",positioning:"Professional authority and patient trust shaped into a coherent identity, content, web and film system."},
-  "recons-group": {file:"case-recons.png",label:"RG / Industrial and building materials",alt:"Recons Group industrial brand communication",positioning:"A technical B2B story simplified for stakeholders across identity, product explanation, social and sales communication."},
+  "recons-group": {file:"case-recons.webp",label:"RG / Industrial and building materials",alt:"Recons Group industrial brand communication",positioning:"A technical B2B story simplified for stakeholders across identity, product explanation, social and sales communication."},
   "sigma-group": {file:"case-sigma.png",label:"SG / Real estate",alt:"Sigma Group real estate brand communication",positioning:"A cohesive real-estate brand architecture designed to make multiple projects easier to recognise and understand."},
-  "red-moments": {file:"case-red-moments.png",label:"RM / Gifting and recognition",alt:"Red Moments gifting brand identity",positioning:"An experience-led gifting proposition translated into identity, packaging and useful customer touchpoints."},
-  "aarya-menstrual-care": {file:"case-aarya.png",label:"AM / Personal care ecommerce",alt:"Aarya menstrual care brand communication",positioning:"Accessible personal-care communication connected across brand, ecommerce, marketplaces and content."},
+  "red-moments": {file:"case-red-moments.webp",label:"RM / Gifting and recognition",alt:"Red Moments gifting brand identity",positioning:"An experience-led gifting proposition translated into identity, packaging and useful customer touchpoints."},
+  "aarya-menstrual-care": {file:"case-aarya.webp",label:"AM / Personal care ecommerce",alt:"Aarya menstrual care brand communication",positioning:"Accessible personal-care communication connected across brand, ecommerce, marketplaces and content."},
   "timex-mica": {file:"case-timex.png",label:"TM / Surfaces and laminates",alt:"Timex Mica surfaces brand communication",positioning:"A design-led surfaces brand carried through identity, catalogue, showroom and digital communication."},
 };
 
@@ -59,7 +61,7 @@ const projectNarratives = {
 
 const serviceMedia = {
   "ad-films-video-content": {type:"video",title:"Ambest video production showreel 2026",youtube:"YaaTIMUeoNs",eyebrow:"Featured film",heading:"Ideas shaped for the screen—and for the audience.",copy:"A current selection of brand, corporate and product storytelling across live action, post-production and channel-ready formats."},
-  "brand-communication-strategy": {type:"image",file:"case-recons.png",alt:"Recons Group communication system",eyebrow:"Strategy in practice",heading:"Make complex offers easier to understand.",copy:"The Recons Group project shows how identity, technical explanation and stakeholder communication can work as one B2B system.",href:"/work/recons-group/"},
+  "brand-communication-strategy": {type:"image",file:"case-recons.webp",alt:"Recons Group communication system",eyebrow:"Strategy in practice",heading:"Make complex offers easier to understand.",copy:"The Recons Group project shows how identity, technical explanation and stakeholder communication can work as one B2B system.",href:"/work/recons-group/"},
   "creative-solutions": {type:"image",file:"case-shreeji.png",alt:"Shreeji Woodcraft creative communication",eyebrow:"Connected creativity",heading:"Build one idea across many expressions.",copy:"Shreeji Woodcraft connects identity, spatial application, editorial assets, digital touchpoints and film around a consistent story.",href:"/work/shreeji-woodcraft/"},
   "digital-social": {type:"image",file:"case-bryan-candy.png",alt:"Bryan and Candy digital campaign",eyebrow:"Digital expression",heading:"Create recognition across every scroll and storefront.",copy:"Bryan & Candy demonstrates a connected approach spanning campaign content, social communication, paid activity and marketplaces.",href:"/work/bryan-candy/"},
   "website-development": {type:"image",file:"website-bhoomi.png",alt:"Bhoomi website shown on a desktop screen",eyebrow:"Website experience",heading:"Turn a brand story into a useful digital journey.",copy:"Bhoomi’s website expression carries the trust-led brand into a clear, responsive customer touchpoint.",href:"/work/bhoomi/"},
@@ -153,7 +155,7 @@ function applyProjectServicePositioning(html, path) {
 }
 
 function aboutMediaSection() {
-  return `<section class="section about-media"><div class="shell"><div class="about-media-card"><img src="/media/about-team.jpg" alt="Ambest team collaborating in the Mumbai studio" loading="eager" decoding="async"><div class="about-media-copy"><p class="eyebrow">Mumbai roots · Global outlook</p><h2>Made close to the brief. Built to travel.</h2><p class="lede">Ambest brings strategy, creativity, production and digital execution into one collaborative team—helping brands stay coherent while adapting communication for different audiences and markets.</p><a class="button signal" href="/work/">Explore our work</a></div></div></div></section>`;
+  return `<section class="section about-media"><div class="shell"><div class="about-media-card"><img src="/media/about-team.webp" alt="Ambest team collaborating in the Mumbai studio" loading="eager" decoding="async"><div class="about-media-copy"><p class="eyebrow">Mumbai roots · Global outlook</p><h2>Made close to the brief. Built to travel.</h2><p class="lede">Ambest brings strategy, creativity, production and digital execution into one collaborative team—helping brands stay coherent while adapting communication for different audiences and markets.</p><a class="button signal" href="/work/">Explore our work</a></div></div></div></section>`;
 }
 
 function projectNarrativeSection(kicker, heading, copy, extra="") {
@@ -273,6 +275,7 @@ function reworkHome(html) {
 function rebrand(html, path, publicSite) {
   html = html
     .replaceAll("https://ambestmedia.com", origin)
+    .replaceAll("sachin@ambestbrandcom.in", defaultLeadRecipient)
     .replaceAll("#c7ff33", "#1900f5")
     .replaceAll("#eef1e7", "#eef3ff")
     .replaceAll("font-weight:900", "font-weight:500")
@@ -309,7 +312,19 @@ function quotePage(html, url, env, publicSite) {
   const selected = url.searchParams.get("service") || "";
   const options = mainServices.map(service => `<option value="${service.id}" ${selected===service.id?'selected':''}>${e(service.name)}</option>`).join("");
   html = rebrand(html, "/get-a-quote/", publicSite).replace('<option value="" selected>Choose a service or offer</option>', `<option value="" ${selected?'':'selected'}>Choose a service or offer</option><optgroup label="Main services">${options}</optgroup>`);
-  if (env.TURNSTILE_SITE_KEY && env.TURNSTILE_SECRET_KEY && env.LEAD_WEBHOOK_URL) html = html.replace(/<p class="status-banner">[\s\S]*?<\/p>/, "");
+  const deliveryReady = Boolean(env.EMAIL?.send || env.LEAD_WEBHOOK_URL);
+  if (env.TURNSTILE_SITE_KEY) {
+    const widget = `<div class="field full turnstile-field"><div class="cf-turnstile" data-sitekey="${e(env.TURNSTILE_SITE_KEY)}" data-action="quote-enquiry" data-theme="light"></div><small>This verification helps prevent automated spam.</small></div>`;
+    html = html
+      .replace('<div class="field full"><button class="button" type="submit">Submit enquiry</button>', `${widget}<div class="field full"><button class="button" type="submit">Submit enquiry</button>`)
+      .replace("</body>", '<script src="https://challenges.cloudflare.com/turnstile/v0/api.js" async defer></script></body>')
+      .replace("quoteForm.reset()", "quoteForm.reset();globalThis.turnstile?.reset()");
+  }
+  if (env.TURNSTILE_SITE_KEY && env.TURNSTILE_SECRET_KEY && deliveryReady) {
+    html = html.replace(/<p class="status-banner">[\s\S]*?<\/p>/, "");
+  } else {
+    html = html.replace(/<p class="status-banner">[\s\S]*?<\/p>/, `<p class="status-banner">Secure online delivery is being configured. You can email <a href="mailto:${defaultLeadRecipient}">${defaultLeadRecipient}</a> in the meantime.</p>`);
+  }
   return html;
 }
 
@@ -333,18 +348,31 @@ async function handleQuote(request, env) {
   if (clean.website) { try { const parsed=new URL(clean.website); if (!["http:","https:"].includes(parsed.protocol)) throw new Error(); } catch { return json({message:"Use a valid website URL beginning with http:// or https://."},422); } }
   if (clean.idempotencyKey && acceptedIds.has(clean.idempotencyKey)) return json({requestId:acceptedIds.get(clean.idempotencyKey),message:"Your enquiry has already been received."},202);
   if (env.DEVELOPMENT_MODE !== "true") {
-    if (!env.TURNSTILE_SECRET_KEY || !env.LEAD_WEBHOOK_URL) return json({message:"Secure enquiry delivery is not configured yet."},503);
+    if (!env.TURNSTILE_SECRET_KEY || (!env.EMAIL?.send && !env.LEAD_WEBHOOK_URL)) return json({message:"Secure enquiry delivery is not configured yet."},503);
     if (!clean["cf-turnstile-response"]) return json({message:"Complete the anti-spam check and try again."},422);
-    const verify = await fetch("https://challenges.cloudflare.com/turnstile/v0/siteverify",{method:"POST",headers:{"content-type":"application/x-www-form-urlencoded"},body:new URLSearchParams({secret:env.TURNSTILE_SECRET_KEY,response:clean["cf-turnstile-response"],remoteip:request.headers.get("cf-connecting-ip")||""})});
+    const verify = await fetch("https://challenges.cloudflare.com/turnstile/v0/siteverify",{method:"POST",headers:{"content-type":"application/x-www-form-urlencoded"},body:new URLSearchParams({secret:env.TURNSTILE_SECRET_KEY,response:clean["cf-turnstile-response"],remoteip:request.headers.get("cf-connecting-ip")||"",idempotency_key:crypto.randomUUID()})});
     const result = await verify.json();
-    if (!result.success) return json({message:"The anti-spam check expired or was invalid. Please try again."},422);
+    if (!result.success || result.action !== "quote-enquiry" || result.hostname !== url.hostname) return json({message:"The anti-spam check expired or was invalid. Please try again."},422);
   }
   const requestId = crypto.randomUUID();
   const record = {requestId,receivedAt:new Date().toISOString(),name:clean.name,email:clean.email,company:clean.company||null,phone:clean.phone||null,selection:clean.selection,goal:clean.goal,website:clean.website||null,country:clean.country||null,budget:clean.budget||null,timing:clean.timing||null};
   if (env.DEVELOPMENT_MODE !== "true") {
-    let endpoint; try { endpoint=new URL(env.LEAD_WEBHOOK_URL); if (endpoint.protocol !== "https:") throw new Error(); } catch { return json({message:"The approved delivery destination is invalid."},503); }
-    const delivery = await fetch(endpoint.toString(),{method:"POST",headers:{"content-type":"application/json",...(env.LEAD_WEBHOOK_TOKEN?{authorization:`Bearer ${env.LEAD_WEBHOOK_TOKEN}`}:{})},body:JSON.stringify(record)});
-    if (!delivery.ok) return json({message:"The enquiry destination did not accept the submission. Please retry or use email."},502);
+    if (env.EMAIL?.send) {
+      const recipient = env.LEAD_RECIPIENT || defaultLeadRecipient;
+      const sender = env.LEAD_SENDER || defaultLeadSender;
+      const rows = [["Reference",requestId],["Received",record.receivedAt],["Name",clean.name],["Email",clean.email],["Company",clean.company],["Phone",clean.phone],["Service",clean.selection],["Website",clean.website],["Country / time zone",clean.country],["Budget",clean.budget],["Timing",clean.timing],["Project goal",clean.goal]];
+      const textBody = rows.filter(([,value])=>value).map(([label,value])=>`${label}: ${value}`).join("\n\n");
+      const htmlBody = `<h1>New Ambest website enquiry</h1>${rows.filter(([,value])=>value).map(([label,value])=>`<p><strong>${e(label)}</strong><br>${e(value).replaceAll("\n","<br>")}</p>`).join("")}`;
+      try {
+        await env.EMAIL.send({to:recipient,from:sender,replyTo:clean.email,subject:`New website enquiry · ${clean.name} · ${clean.selection}`,text:textBody,html:htmlBody});
+      } catch {
+        return json({message:`The enquiry could not be delivered. Please email ${defaultLeadRecipient}.`},502);
+      }
+    } else {
+      let endpoint; try { endpoint=new URL(env.LEAD_WEBHOOK_URL); if (endpoint.protocol !== "https:") throw new Error(); } catch { return json({message:"The approved delivery destination is invalid."},503); }
+      const delivery = await fetch(endpoint.toString(),{method:"POST",headers:{"content-type":"application/json",...(env.LEAD_WEBHOOK_TOKEN?{authorization:`Bearer ${env.LEAD_WEBHOOK_TOKEN}`}:{})},body:JSON.stringify(record)});
+      if (!delivery.ok) return json({message:`The enquiry destination did not accept the submission. Please retry or email ${defaultLeadRecipient}.`},502);
+    }
   }
   if (clean.idempotencyKey) {
     acceptedIds.set(clean.idempotencyKey,requestId);

@@ -58,4 +58,4 @@ pnpm cloudflare:check
 pnpm deploy:cloudflare
 ```
 
-Configure `TURNSTILE_SECRET_KEY` and `LEAD_WEBHOOK_URL` as encrypted Worker secrets before enabling production lead delivery. The public site is live, but the guarded enquiry endpoint will continue to return a configuration error until those secrets are set and a test submission reaches the approved destination.
+The quote form is prepared for Cloudflare Email Service delivery to `sachin@ambestmedia.com` through the restricted `EMAIL` binding. Onboard `ambestbrandcom.com` for Email Sending, verify the destination address, create a Turnstile widget for `www.ambestbrandcom.com`, add its public key as `TURNSTILE_SITE_KEY`, and store its secret as the encrypted Worker secret `TURNSTILE_SECRET_KEY`. The endpoint validates every Turnstile token server-side, including its action and hostname, before sending a transactional enquiry email. Until those Cloudflare account settings are complete, the form shows the direct email fallback instead of claiming that an enquiry was sent.

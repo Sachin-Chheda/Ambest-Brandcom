@@ -90,6 +90,10 @@ if (!publicMapText.includes("/seo/how-it-works/")) failures.push("public sitemap
 if (!publicMapText.includes("https://www.ambestbrandcom.com/seo/how-it-works/")) failures.push("public sitemap uses the wrong canonical host");
 const publicRobots = await (await request("/robots.txt", {}, {PUBLIC_SITE:"true"})).text();
 if (!publicRobots.includes("Sitemap: https://www.ambestbrandcom.com/sitemap.xml") || publicRobots.includes("Disallow: /\n")) failures.push("public robots.txt is not crawlable or uses the wrong sitemap host");
+const protectedQuote = await request("/get-a-quote/", {}, {PUBLIC_SITE:"true",TURNSTILE_SITE_KEY:"site-key",TURNSTILE_SECRET_KEY:"secret-key",EMAIL:{send:async()=>({messageId:"render-test"})}});
+const protectedQuoteHtml = await protectedQuote.text();
+if (!protectedQuoteHtml.includes('class="cf-turnstile"') || !protectedQuoteHtml.includes('data-action="quote-enquiry"') || !protectedQuoteHtml.includes("challenges.cloudflare.com/turnstile/v0/api.js")) failures.push("quote form: Turnstile widget is not rendered when configured");
+if (!protectedQuoteHtml.includes("sachin@ambestmedia.com") || protectedQuoteHtml.includes("sachin@ambestbrandcom.in")) failures.push("quote form: enquiry contact is not sachin@ambestmedia.com");
 
 const canonicalCases = [
   ["https://ambestbrandcom.com/", "https://www.ambestbrandcom.com/"],
@@ -114,6 +118,20 @@ const first = await accepted.json();
 const duplicate = await request("/api/quote", {method:"POST",headers:{"content-type":"application/json"},body:JSON.stringify(payload)}, {DEVELOPMENT_MODE:"true"});
 const second = await duplicate.json();
 if (duplicate.status !== 202 || first.requestId !== second.requestId) failures.push("idempotent duplicate handling failed");
+const originalFetch = globalThis.fetch;
+let deliveredEmail;
+try {
+  globalThis.fetch = async input => {
+    if (String(input).includes("challenges.cloudflare.com/turnstile/v0/siteverify")) return new Response(JSON.stringify({success:true,action:"quote-enquiry",hostname:"www.ambestbrandcom.com"}),{headers:{"content-type":"application/json"}});
+    throw new Error(`Unexpected external fetch in quote test: ${input}`);
+  };
+  const productionPayload = {...payload,email:"prospect@example.com",selection:"brand-communication-strategy",idempotencyKey:"qa-email-0001","cf-turnstile-response":"valid-test-token"};
+  const emailed = await worker.fetch(new Request("https://www.ambestbrandcom.com/api/quote",{method:"POST",headers:{"content-type":"application/json"},body:JSON.stringify(productionPayload)}),{TURNSTILE_SECRET_KEY:"secret-key",EMAIL:{send:async message=>{deliveredEmail=message;return {messageId:"email-test"};}},LEAD_RECIPIENT:"sachin@ambestmedia.com",LEAD_SENDER:"website@ambestbrandcom.com"},{});
+  if (emailed.status !== 202) failures.push(`configured production form: expected 202, got ${emailed.status}`);
+  if (deliveredEmail?.to !== "sachin@ambestmedia.com" || deliveredEmail?.replyTo !== "prospect@example.com") failures.push("configured production form: email delivery fields are incorrect");
+} finally {
+  globalThis.fetch = originalFetch;
+}
 const blocked = await request("/api/quote", {method:"POST",headers:{"content-type":"application/json"},body:JSON.stringify({...payload,idempotencyKey:"qa-unconfigured"})}, {});
 if (blocked.status !== 503) failures.push(`unconfigured production form: expected 503, got ${blocked.status}`);
 

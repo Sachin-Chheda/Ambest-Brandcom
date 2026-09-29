@@ -20,8 +20,16 @@
     "binding": "ASSETS",
     "run_worker_first": true
   },
+  "send_email": [
+    {
+      "name": "EMAIL",
+      "destination_address": "sachin@ambestmedia.com"
+    }
+  ],
   "vars": {
-    "PUBLIC_SITE": "true"
+    "PUBLIC_SITE": "true",
+    "LEAD_RECIPIENT": "sachin@ambestmedia.com",
+    "LEAD_SENDER": "website@ambestbrandcom.com"
   },
   "observability": {
     "enabled": true
