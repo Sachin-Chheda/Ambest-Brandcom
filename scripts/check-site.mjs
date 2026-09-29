@@ -37,6 +37,10 @@ for (const route of requiredRoutes) {
 
 const checkedLinks = new Set();
 for (const [route, html] of pages) {
+  if (html.includes('class="video-frame"')) {
+    if (html.includes("iframe srcdoc=")) failures.push(`${route}: video still uses a nested scrolling thumbnail iframe`);
+    if (!html.includes("data-video-player") || !html.includes("data-video-id=")) failures.push(`${route}: responsive click-to-play video thumbnail is incomplete`);
+  }
   for (const match of html.matchAll(/href="(\/[^"#?]*)/g)) {
     const href = match[1];
     if (checkedLinks.has(href) || href.startsWith("/api/")) continue;
@@ -59,7 +63,9 @@ if (publicHomeHtml.includes("#c7ff33")) failures.push("brand palette: legacy gre
 if (/font-weight:(700|800|900)/.test(publicHomeHtml)) failures.push("typography: bold font weight remains in rendered homepage CSS");
 if (!publicHomeHtml.includes("India + APAC experience") || !publicHomeHtml.includes("wider Asia-Pacific region")) failures.push("home: approved India + APAC experience copy is missing");
 if (!publicHomeHtml.includes("Singapore, Canada and the US")) failures.push("home: international touchpoints do not include the US");
-if (!publicHomeHtml.includes("youtube-nocookie.com/embed/YaaTIMUeoNs") || !publicHomeHtml.includes("2026 showreel")) failures.push("home: verified 2026 showreel embed is missing");
+if (!publicHomeHtml.includes('class="home-hero-video"') || !publicHomeHtml.includes("AMbest-Website-Home-Page-Video.webm")) failures.push("home: original Ambest banner video is missing");
+if (!publicHomeHtml.includes('data-video-id="YaaTIMUeoNs"') || !publicHomeHtml.includes("2026 showreel")) failures.push("home: verified 2026 showreel thumbnail is missing");
+if (publicHomeHtml.includes("iframe srcdoc=")) failures.push("videos: nested scrolling thumbnail iframe remains on the homepage");
 const workHtml = await (await request("/work/")).text();
 if (!workHtml.includes('<a href="/work/recons-group/">Impact Created</a>') || workHtml.includes("Read the project record")) failures.push("project CTA: Recons card label was not updated");
 if (workHtml.includes("Ppc Advertising")) failures.push("service naming: PPC capitalization is inconsistent");
@@ -75,7 +81,8 @@ for (const route of requiredRoutes.filter(route => route.startsWith("/work/") &&
   if (/What can be said responsibly|This section is editorial interpretation|The scope of this evidence/.test(pages.get(route) || "")) failures.push(`${route}: internal audit language remains in the public case study`);
 }
 const filmsHtml = pages.get("/video-production/results/") || "";
-if ((filmsHtml.match(/youtube-nocookie.com\/embed\//g) || []).length < 6) failures.push("video results: six verified film embeds are missing");
+if ((filmsHtml.match(/data-video-id=/g) || []).length < 6) failures.push("video results: six verified film thumbnails are missing");
+if (filmsHtml.includes("iframe srcdoc=") || !filmsHtml.includes("scrolling','no")) failures.push("video results: no-scroll click-to-play player is missing");
 const mediaDir = resolve(import.meta.dirname, "..", "public", "media");
 if (!existsSync(mediaDir) || readdirSync(mediaDir).length < 19) failures.push("media: expected imported Ambest asset set is incomplete");
 const missing = await request("/definitely-missing/");
@@ -94,6 +101,8 @@ const protectedQuote = await request("/get-a-quote/", {}, {PUBLIC_SITE:"true",TU
 const protectedQuoteHtml = await protectedQuote.text();
 if (!protectedQuoteHtml.includes('class="cf-turnstile"') || !protectedQuoteHtml.includes('data-action="quote-enquiry"') || !protectedQuoteHtml.includes("challenges.cloudflare.com/turnstile/v0/api.js")) failures.push("quote form: Turnstile widget is not rendered when configured");
 if (!protectedQuoteHtml.includes("sachin@ambestmedia.com") || protectedQuoteHtml.includes("sachin@ambestbrandcom.in")) failures.push("quote form: enquiry contact is not sachin@ambestmedia.com");
+if (!protectedQuoteHtml.includes('placeholder="example.com"') || protectedQuoteHtml.includes('placeholder="https://"')) failures.push("quote form: website field still requires a protocol");
+for (const removedField of ['company','country','budget','timing']) if (protectedQuoteHtml.includes(`id="${removedField}"`)) failures.push(`quote form: unnecessary ${removedField} field remains visible`);
 
 const canonicalCases = [
   ["https://ambestbrandcom.com/", "https://www.ambestbrandcom.com/"],
@@ -125,10 +134,11 @@ try {
     if (String(input).includes("challenges.cloudflare.com/turnstile/v0/siteverify")) return new Response(JSON.stringify({success:true,action:"quote-enquiry",hostname:"www.ambestbrandcom.com"}),{headers:{"content-type":"application/json"}});
     throw new Error(`Unexpected external fetch in quote test: ${input}`);
   };
-  const productionPayload = {...payload,email:"prospect@example.com",selection:"brand-communication-strategy",idempotencyKey:"qa-email-0001","cf-turnstile-response":"valid-test-token"};
+  const productionPayload = {...payload,email:"prospect@example.com",selection:"brand-communication-strategy",website:"example.com",idempotencyKey:"qa-email-0001","cf-turnstile-response":"valid-test-token"};
   const emailed = await worker.fetch(new Request("https://www.ambestbrandcom.com/api/quote",{method:"POST",headers:{"content-type":"application/json"},body:JSON.stringify(productionPayload)}),{TURNSTILE_SECRET_KEY:"secret-key",EMAIL:{send:async message=>{deliveredEmail=message;return {messageId:"email-test"};}},LEAD_RECIPIENT:"sachin@ambestmedia.com",LEAD_SENDER:"website@ambestbrandcom.com"},{});
   if (emailed.status !== 202) failures.push(`configured production form: expected 202, got ${emailed.status}`);
   if (deliveredEmail?.to !== "sachin@ambestmedia.com" || deliveredEmail?.replyTo !== "prospect@example.com") failures.push("configured production form: email delivery fields are incorrect");
+  if (!deliveredEmail?.text?.includes("Website: https://example.com/")) failures.push("configured production form: plain website domain was not normalized automatically");
 } finally {
   globalThis.fetch = originalFetch;
 }
@@ -141,3 +151,4 @@ if (failures.length) {
   process.exit(1);
 }
 console.log(`Site checks passed: ${requiredRoutes.length} routes, ${checkedLinks.size} internal destinations, form validation/idempotency and preview indexing controls.`);
+
