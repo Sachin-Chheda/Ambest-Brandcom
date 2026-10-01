@@ -59,6 +59,21 @@ for (const label of ["Ad Films &amp; Video Content","Brand Communication &amp; S
 }
 if (!publicHomeHtml.includes('alt="Ambest Brandcom"') || !publicHomeHtml.includes('data:image/png;base64,')) failures.push("header: supplied Ambest logo is not embedded");
 if (!publicHomeHtml.includes('class="footer-logo"')) failures.push("footer: supplied Ambest logo is missing");
+const socialProfiles = [
+  ["Facebook", "https://www.facebook.com/AmbestBrandCom/"],
+  ["X", "https://twitter.com/AmbestBrandCom"],
+  ["YouTube", "https://www.youtube.com/@ambestmedia"],
+  ["Instagram", "https://www.instagram.com/AmbestBrandCom/"],
+  ["LinkedIn", "https://www.linkedin.com/company/ambestbrandcom/"],
+  ["Pinterest", "https://in.pinterest.com/AmbestBrandCom/"],
+];
+for (const [name,url] of socialProfiles) {
+  const link = `<a href="${url}" target="_blank" rel="noopener noreferrer" aria-label="Ambest Brandcom on ${name} (opens in a new tab)">${name}</a>`;
+  if (!publicHomeHtml.includes(link) || !pages.get("/contact/")?.includes(link)) failures.push(`social profiles: missing ${name} link on a shared footer`);
+}
+const organizationGraph = JSON.parse(publicHomeHtml.match(/<script type="application\/ld\+json">([\s\S]*?)<\/script>/)?.[1] || "{}");
+const organization = organizationGraph["@graph"]?.find(item => item["@type"] === "Organization");
+if (JSON.stringify(organization?.sameAs) !== JSON.stringify(socialProfiles.map(([,url]) => url))) failures.push("organization metadata: social profiles are incomplete");
 if (!publicHomeHtml.includes("Copyrights Reserved Ambest Brandcom") || publicHomeHtml.includes("policy-stated operator")) failures.push("footer: copyright line is incorrect");
 if (publicHomeHtml.includes("#c7ff33")) failures.push("brand palette: legacy green is still present");
 if (/font-weight:(700|800|900)/.test(publicHomeHtml)) failures.push("typography: bold font weight remains in rendered homepage CSS");

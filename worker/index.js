@@ -22,6 +22,14 @@ const videoServiceRoutes = videoServices.map(service => `/video-production/${ser
 const brandCreativeRoutes = brandCreativeServices.map(service => `/brand-creative/${service.slug}/`);
 const defaultLeadRecipient = "sachin@ambestmedia.com";
 const defaultLeadSender = "website@ambestbrandcom.com";
+const socialProfiles = [
+  {name:"Facebook",url:"https://www.facebook.com/AmbestBrandCom/"},
+  {name:"X",url:"https://twitter.com/AmbestBrandCom"},
+  {name:"YouTube",url:"https://www.youtube.com/@ambestmedia"},
+  {name:"Instagram",url:"https://www.instagram.com/AmbestBrandCom/"},
+  {name:"LinkedIn",url:"https://www.linkedin.com/company/ambestbrandcom/"},
+  {name:"Pinterest",url:"https://in.pinterest.com/AmbestBrandCom/"},
+];
 const countryNames = "Afghanistan|Albania|Algeria|Andorra|Angola|Antigua and Barbuda|Argentina|Armenia|Australia|Austria|Azerbaijan|Bahamas|Bahrain|Bangladesh|Barbados|Belarus|Belgium|Belize|Benin|Bhutan|Bolivia|Bosnia and Herzegovina|Botswana|Brazil|Brunei|Bulgaria|Burkina Faso|Burundi|Cabo Verde|Cambodia|Cameroon|Canada|Central African Republic|Chad|Chile|China|Colombia|Comoros|Congo, Democratic Republic of the|Congo, Republic of the|Costa Rica|Côte d’Ivoire|Croatia|Cuba|Cyprus|Czechia|Denmark|Djibouti|Dominica|Dominican Republic|Ecuador|Egypt|El Salvador|Equatorial Guinea|Eritrea|Estonia|Eswatini|Ethiopia|Fiji|Finland|France|Gabon|Gambia|Georgia|Germany|Ghana|Greece|Grenada|Guatemala|Guinea|Guinea-Bissau|Guyana|Haiti|Honduras|Hungary|Iceland|India|Indonesia|Iran|Iraq|Ireland|Israel|Italy|Jamaica|Japan|Jordan|Kazakhstan|Kenya|Kiribati|Kuwait|Kyrgyzstan|Laos|Latvia|Lebanon|Lesotho|Liberia|Libya|Liechtenstein|Lithuania|Luxembourg|Madagascar|Malawi|Malaysia|Maldives|Mali|Malta|Marshall Islands|Mauritania|Mauritius|Mexico|Micronesia|Moldova|Monaco|Mongolia|Montenegro|Morocco|Mozambique|Myanmar|Namibia|Nauru|Nepal|Netherlands|New Zealand|Nicaragua|Niger|Nigeria|North Korea|North Macedonia|Norway|Oman|Pakistan|Palau|Palestine|Panama|Papua New Guinea|Paraguay|Peru|Philippines|Poland|Portugal|Qatar|Romania|Russia|Rwanda|Saint Kitts and Nevis|Saint Lucia|Saint Vincent and the Grenadines|Samoa|San Marino|São Tomé and Príncipe|Saudi Arabia|Senegal|Serbia|Seychelles|Sierra Leone|Singapore|Slovakia|Slovenia|Solomon Islands|Somalia|South Africa|South Korea|South Sudan|Spain|Sri Lanka|Sudan|Suriname|Sweden|Switzerland|Syria|Taiwan|Tajikistan|Tanzania|Thailand|Timor-Leste|Togo|Tonga|Trinidad and Tobago|Tunisia|Türkiye|Turkmenistan|Tuvalu|Uganda|Ukraine|United Arab Emirates|United Kingdom|United States|Uruguay|Uzbekistan|Vanuatu|Vatican City|Venezuela|Vietnam|Yemen|Zambia|Zimbabwe|Other".split("|");
 
 const projectVisuals = {
@@ -76,59 +84,7 @@ const featuredFilms = [
   {id:"YaaTIMUeoNs",poster:"video-showreel.jpg",title:"Video Production Showreel 2026",tag:"Showreel"},
   {id:"kw48Puf-Xxg",poster:"video-shreeji.jpg",title:"Shreeji Woodcraft industrial brand film",tag:"Brand film"},
   {id:"QU-ustoKMlg",poster:"video-agri.jpg",title:"Agri-food corporate film: From Farm to Future",tag:"Corporate film"},
-  {id:"RIoAXxwHBe4",poster:"video-healthcare.jpg",title:"Healthcare and diagnostics campaign film",tag:"Healthcare"},
-  {id:"Ohj3Uh9IEjo",poster:"video-celebrity.jpg",title:"Bryan & Candy celebrity ad film",tag:"Advertising"},
-  {id:"sNsCuniNPjg",poster:"video-ai.jpg",title:"Human creativity with AI-led video",tag:"Creative technology"},
-];
-const projectFilms = {
-  "shreeji-woodcraft": {id:"kw48Puf-Xxg",poster:"video-shreeji.jpg",title:"Shreeji Woodcraft industrial brand film"},
-  "bryan-candy": {id:"Ohj3Uh9IEjo",poster:"video-celebrity.jpg",title:"Bryan & Candy advertising film"},
-};
-
-function youtubeEmbed(id, title, suppliedPoster) {
-  const poster = suppliedPoster || featuredFilms.find(film => film.id === id)?.poster || "video-showreel.jpg";
-  return `<div class="video-frame" data-video-player><button class="video-poster" type="button" data-video-id="${e(id)}" data-video-title="${e(title)}" aria-label="Play ${e(title)}"><img src="/media/${poster}" alt="" loading="lazy" decoding="async"><span class="video-shade" aria-hidden="true"></span><span class="video-play" aria-hidden="true"></span><span class="video-label">${e(title)}</span></button><noscript><a class="video-fallback" href="https://www.youtube.com/watch?v=${e(id)}">Watch ${e(title)} on YouTube</a></noscript></div>`;
-}
-
-function homeVideoHero() {
-  return `<section class="home-video-hero" aria-labelledby="home-heading"><video class="home-hero-video" autoplay muted loop playsinline preload="metadata" poster="/media/video-showreel.jpg" aria-hidden="true"><source src="${legacyHomeVideo}" type="video/webm"></video><div class="home-hero-scrim" aria-hidden="true"></div><div class="shell home-hero-content"><p class="eyebrow">Mumbai-rooted · Global brand communications partner</p><h1 id="home-heading">Make your brand make sense. <span>Everywhere.</span></h1><p class="hero-copy">Ambest helps global and ambitious Indian companies translate complex business stories into clear brand communication, content and experiences—built with local understanding and delivered across markets.</p><div class="actions"><a class="button signal" href="/get-a-quote/">Get Custom Quote</a><a class="button hero-secondary" href="/work/">View Our Work</a></div><p class="home-hero-services">Strategy · Creativity · Film · Digital · Web · Experiences</p></div></section>`;
-}
-
-const videoPlayerScript = `<script>
-document.querySelectorAll('[data-video-player]').forEach(player=>{const trigger=player.querySelector('[data-video-id]');trigger?.addEventListener('click',()=>{const id=trigger.dataset.videoId;if(!/^[A-Za-z0-9_-]{6,20}$/.test(id))return;const frame=document.createElement('iframe');frame.src='https://www.youtube-nocookie.com/embed/'+encodeURIComponent(id)+'?rel=0&autoplay=1&playsinline=1';frame.title=trigger.dataset.videoTitle||'Ambest video';frame.loading='lazy';frame.allow='accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share';frame.referrerPolicy='strict-origin-when-cross-origin';frame.allowFullscreen=true;frame.setAttribute('scrolling','no');player.replaceChildren(frame);frame.focus()},{once:true})});
-</script>`;
-
-function showreelSection() {
-  return `<section class="section media-feature"><div class="shell media-split"><div><p class="eyebrow">2026 showreel</p><h2>Ideas that move.<br>Stories that travel.</h2><p class="lede">A selection of Ambest film work across brand stories, corporate communication, products and campaigns—created for different audiences, formats and markets.</p><div class="actions"><a class="button signal" href="/video-production/results/">Explore featured films</a><a class="button secondary" href="/services/ad-films-video-content/">Ad Films &amp; Video Content</a></div></div>${youtubeEmbed("YaaTIMUeoNs","Ambest video production showreel 2026")}</div></section>`;
-}
-
-function projectVisualSection(slug) {
-  const visual = projectVisuals[slug];
-  if (!visual) return "";
-  return `<section class="section project-visual-section"><div class="shell project-visual-layout"><figure class="project-visual"><img src="/media/${visual.file}" alt="${e(visual.alt)}" loading="eager" decoding="async"><figcaption>Selected visual from the Ambest project archive.</figcaption></figure><div class="project-positioning"><p class="eyebrow">Why this work travels</p><h2>Clear thinking, expressed as a connected system.</h2><p class="lede">${e(visual.positioning)}</p><p>For global and multi-market teams, the transferable value is disciplined consistency: one strategic idea, adapted thoughtfully to each audience, channel and use.</p></div></div></section>`;
-}
-
-function projectFilmSection(slug) {
-  const film = projectFilms[slug];
-  if (!film) return "";
-  return `<section class="section production-example"><div class="shell media-split"><div><p class="eyebrow">Moving-image work</p><h2>See the brand in motion.</h2><p class="lede">This published film connects the case study to Ambest’s Ad Films &amp; Video Content capability.</p></div>${youtubeEmbed(film.id,film.title,film.poster)}</div></section>`;
-}
-
-function serviceMediaSection(service) {
-  const media = serviceMedia[service.id];
-  if (!media) return "";
-  const visual = media.type === "video"
-    ? youtubeEmbed(media.youtube, media.title)
-    : `<a class="service-image" href="${media.href}"><img src="/media/${media.file}" alt="${e(media.alt)}" loading="lazy" decoding="async"></a>`;
-  return `<section class="section media-feature"><div class="shell media-split"><div><p class="eyebrow">${e(media.eyebrow)}</p><h2>${e(media.heading)}</h2><p class="lede">${e(media.copy)}</p>${media.type === "image" ? `<a href="${media.href}">View the related work →</a>` : `<a href="/video-production/results/">Explore featured films →</a>`}</div>${visual}</div></section>`;
-}
-
-function filmGallery() {
-  return `<section class="section film-gallery-section"><div class="shell"><div class="section-head"><div class="section-kicker">Selected films</div><div><h2>Watch the work in context.</h2><p class="lede">A cross-section of Ambest’s current film portfolio, from brand and corporate storytelling to healthcare, advertising and creative technology.</p></div></div><div class="film-grid">${featuredFilms.map(film => `<article class="film-card">${youtubeEmbed(film.id,film.title)}<div class="film-copy"><span class="tag">${e(film.tag)}</span><h3>${e(film.title)}</h3></div></article>`).join("")}</div></div></section>`;
-}
-
-function videoServiceDirectory() {
-  return `<section class="section production-directory"><div class="shell"><div class="section-head"><div class="section-kicker">Production services</div><div><h2>Choose the kind of story you need to tell.</h2><p class="lede">Sixteen focused production capabilities, each with its own process, example and deliverables. They can work independently or as part of a connected brand programme.</p></div></div><div class="production-grid">${videoServices.map(service => `<article class="production-card"><a class="production-card-media" href="/video-production/${service.slug}/"><img src="/media/${service.poster}" alt="" loading="lazy" decoding="async"><span>${e(service.eyebrow)}</span></a><div class="production-card-copy"><h3><a href="/video-production/${service.slug}/">${e(service.name)}</a></h3><p>${e(service.fit)}</p><a class="production-card-link" href="/video-production/${service.slug}/">Explore ${e(service.name)} →</a></div></article>`).join("")}</div></div></section>`;
+  {id:"RIoAXxwHBe4",poster:"video-healthcare.jpg",title:"Healthcare and diagnostics cprocess, example and deliverables. They can work independently or as part of a connected brand programme.</p></div></div><div class="production-grid">${videoServices.map(service => `<article class="production-card"><a class="production-card-media" href="/video-production/${service.slug}/"><img src="/media/${service.poster}" alt="" loading="lazy" decoding="async"><span>${e(service.eyebrow)}</span></a><div class="production-card-copy"><h3><a href="/video-production/${service.slug}/">${e(service.name)}</a></h3><p>${e(service.fit)}</p><a class="production-card-link" href="/video-production/${service.slug}/">Explore ${e(service.name)} →</a></div></article>`).join("")}</div></div></section>`;
 }
 
 function relatedVideoServices(currentSlug) {
@@ -305,6 +261,7 @@ const brandCss = `
 .site-header,body,button,input,select,textarea{font-family:"Aptos","Segoe UI",Helvetica,Arial,sans-serif;font-synthesis:none}.desktop-nav>a,.nav-parent,.mobile-panel a,.mobile-panel summary,.button,.eyebrow,.section-kicker,.number,.tag,strong,h1,h2,h3,.footer-brand{font-weight:500}.hero-note strong{font-weight:500}.footer-logo-panel{display:inline-flex;padding:.65rem .8rem;background:#fff;border-radius:3px}.footer-logo{display:block;width:210px;height:auto}
 .brand{min-width:176px}.brand-logo{display:block;width:174px;height:auto}.brand-mark{display:none}
 .status-banner{color:#fff}.status-banner a{color:inherit}
+.footer-social{display:flex;align-items:center;gap:1.5rem;flex-wrap:wrap;margin-top:2.5rem;padding-top:1.5rem;border-top:1px solid #303948}.footer-social-label{color:#e7e9f6;font-size:.76rem;font-weight:500;letter-spacing:.12em;text-transform:uppercase}.social-links{display:flex;flex-wrap:wrap;gap:.55rem}.footer .social-links a{display:inline-flex;min-height:40px;align-items:center;margin:0;padding:.42rem .8rem;border:1px solid #515b70;border-radius:999px;color:#f4f5ff;font-size:.84rem;font-weight:500;text-decoration:none;transition:background .2s,border-color .2s}.footer .social-links a:hover,.footer .social-links a:focus-visible{border-color:#ff8a42;background:linear-gradient(110deg,#1900f5,#972858 60%,#ff5a00);color:#fff}
 h1 span{color:var(--brand-blue);background:linear-gradient(100deg,#ff5a00 0%,#972858 42%,#140a72 72%,#1900f5 100%);background-clip:text;-webkit-background-clip:text;-webkit-text-fill-color:transparent}
 .global-band{background:linear-gradient(130deg,#140a72 0%,#101827 58%,#7d2616 100%)}
 .global-band h2 span{color:#fff;background:linear-gradient(100deg,#ff8a42,#8b7cff,#6f74ff);background-clip:text;-webkit-background-clip:text;-webkit-text-fill-color:transparent}
@@ -339,7 +296,8 @@ function header() {
 function footer(publicSite) {
   const releaseLabel = publicSite ? "Global experience · Mumbai roots" : "Private review build · no production cutover implied";
   const availabilityLabel = publicSite ? "Serving brands in India and global markets" : "Published contacts—operational status pending confirmation";
-  return `<footer class="footer"><div class="shell"><div class="footer-grid"><div><a class="footer-logo-panel" href="/" aria-label="Ambest Brandcom home"><img class="footer-logo" src="${headerLogo}" alt="Ambest Brandcom"></a><p>A Mumbai-rooted brand communications partner with experience in India and global markets.</p><span class="availability">${availabilityLabel}</span></div><div><strong>Main services</strong><a href="/services/ad-films-video-content/">Ad Films & Video Content</a><a href="/services/brand-communication-strategy/">Brand Communication & Strategy</a><a href="/services/creative-solutions/">Creative Solutions</a></div><div><strong>More services</strong><a href="/services/digital-social/">Digital & Social</a><a href="/services/website-development/">Website Development</a><a href="/services/brand-experiences-partnerships/">Brand Experiences & Partnerships</a><a href="/work/">Work</a></div><div><strong>Start</strong><a href="/about/">About</a><a href="/blog/">Insights</a><a href="/contact/">Contact</a><a href="/get-a-quote/">Get Custom Quote</a><a href="/privacy-policy/">Privacy</a></div></div><div class="fineprint"><small>Copyrights Reserved Ambest Brandcom</small><small>${releaseLabel}</small></div></div></footer>`;
+  const socialLinks = socialProfiles.map(({name,url}) => `<a href="${e(url)}" target="_blank" rel="noopener noreferrer" aria-label="Ambest Brandcom on ${e(name)} (opens in a new tab)">${e(name)}</a>`).join("");
+  return `<footer class="footer"><div class="shell"><div class="footer-grid"><div><a class="footer-logo-panel" href="/" aria-label="Ambest Brandcom home"><img class="footer-logo" src="${headerLogo}" alt="Ambest Brandcom"></a><p>A Mumbai-rooted brand communications partner with experience in India and global markets.</p><span class="availability">${availabilityLabel}</span></div><div><strong>Main services</strong><a href="/services/ad-films-video-content/">Ad Films & Video Content</a><a href="/services/brand-communication-strategy/">Brand Communication & Strategy</a><a href="/services/creative-solutions/">Creative Solutions</a></div><div><strong>More services</strong><a href="/services/digital-social/">Digital & Social</a><a href="/services/website-development/">Website Development</a><a href="/services/brand-experiences-partnerships/">Brand Experiences & Partnerships</a><a href="/work/">Work</a></div><div><strong>Start</strong><a href="/about/">About</a><a href="/blog/">Insights</a><a href="/contact/">Contact</a><a href="/get-a-quote/">Get Custom Quote</a><a href="/privacy-policy/">Privacy</a></div></div><nav class="footer-social" aria-label="Ambest Brandcom social media"><span class="footer-social-label">Follow Ambest</span><div class="social-links">${socialLinks}</div></nav><div class="fineprint"><small>Copyrights Reserved Ambest Brandcom</small><small>${releaseLabel}</small></div></div></footer>`;
 }
 
 function serviceCards() {
@@ -372,6 +330,7 @@ function reworkHome(html) {
 function rebrand(html, path, publicSite) {
   html = html
     .replaceAll("https://ambestmedia.com", origin)
+    .replace('"name":"Ambest Brandcom","legalName":"Ambest Media Company"', `"name":"Ambest Brandcom","sameAs":${JSON.stringify(socialProfiles.map(({url}) => url))},"legalName":"Ambest Media Company"`)
     .replaceAll("sachin@ambestbrandcom.in", defaultLeadRecipient)
     .replaceAll("#c7ff33", "#1900f5")
     .replaceAll("#eef1e7", "#eef3ff")
