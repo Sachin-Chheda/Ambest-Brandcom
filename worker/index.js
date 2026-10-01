@@ -84,7 +84,59 @@ const featuredFilms = [
   {id:"YaaTIMUeoNs",poster:"video-showreel.jpg",title:"Video Production Showreel 2026",tag:"Showreel"},
   {id:"kw48Puf-Xxg",poster:"video-shreeji.jpg",title:"Shreeji Woodcraft industrial brand film",tag:"Brand film"},
   {id:"QU-ustoKMlg",poster:"video-agri.jpg",title:"Agri-food corporate film: From Farm to Future",tag:"Corporate film"},
-  {id:"RIoAXxwHBe4",poster:"video-healthcare.jpg",title:"Healthcare and diagnostics cprocess, example and deliverables. They can work independently or as part of a connected brand programme.</p></div></div><div class="production-grid">${videoServices.map(service => `<article class="production-card"><a class="production-card-media" href="/video-production/${service.slug}/"><img src="/media/${service.poster}" alt="" loading="lazy" decoding="async"><span>${e(service.eyebrow)}</span></a><div class="production-card-copy"><h3><a href="/video-production/${service.slug}/">${e(service.name)}</a></h3><p>${e(service.fit)}</p><a class="production-card-link" href="/video-production/${service.slug}/">Explore ${e(service.name)} →</a></div></article>`).join("")}</div></div></section>`;
+  {id:"RIoAXxwHBe4",poster:"video-healthcare.jpg",title:"Healthcare and diagnostics campaign film",tag:"Healthcare"},
+  {id:"Ohj3Uh9IEjo",poster:"video-celebrity.jpg",title:"Bryan & Candy celebrity ad film",tag:"Advertising"},
+  {id:"sNsCuniNPjg",poster:"video-ai.jpg",title:"Human creativity with AI-led video",tag:"Creative technology"},
+];
+const projectFilms = {
+  "shreeji-woodcraft": {id:"kw48Puf-Xxg",poster:"video-shreeji.jpg",title:"Shreeji Woodcraft industrial brand film"},
+  "bryan-candy": {id:"Ohj3Uh9IEjo",poster:"video-celebrity.jpg",title:"Bryan & Candy advertising film"},
+};
+
+function youtubeEmbed(id, title, suppliedPoster) {
+  const poster = suppliedPoster || featuredFilms.find(film => film.id === id)?.poster || "video-showreel.jpg";
+  return `<div class="video-frame" data-video-player><button class="video-poster" type="button" data-video-id="${e(id)}" data-video-title="${e(title)}" aria-label="Play ${e(title)}"><img src="/media/${poster}" alt="" loading="lazy" decoding="async"><span class="video-shade" aria-hidden="true"></span><span class="video-play" aria-hidden="true"></span><span class="video-label">${e(title)}</span></button><noscript><a class="video-fallback" href="https://www.youtube.com/watch?v=${e(id)}">Watch ${e(title)} on YouTube</a></noscript></div>`;
+}
+
+function homeVideoHero() {
+  return `<section class="home-video-hero" aria-labelledby="home-heading"><video class="home-hero-video" autoplay muted loop playsinline preload="metadata" poster="/media/video-showreel.jpg" aria-hidden="true"><source src="${legacyHomeVideo}" type="video/webm"></video><div class="home-hero-scrim" aria-hidden="true"></div><div class="shell home-hero-content"><p class="eyebrow">Mumbai-rooted · Global brand communications partner</p><h1 id="home-heading">Make your brand make sense. <span>Everywhere.</span></h1><p class="hero-copy">Ambest helps global and ambitious Indian companies translate complex business stories into clear brand communication, content and experiences—built with local understanding and delivered across markets.</p><div class="actions"><a class="button signal" href="/get-a-quote/">Get Custom Quote</a><a class="button hero-secondary" href="/work/">View Our Work</a></div><p class="home-hero-services">Strategy · Creativity · Film · Digital · Web · Experiences</p></div></section>`;
+}
+
+const videoPlayerScript = `<script>
+document.querySelectorAll('[data-video-player]').forEach(player=>{const trigger=player.querySelector('[data-video-id]');trigger?.addEventListener('click',()=>{const id=trigger.dataset.videoId;if(!/^[A-Za-z0-9_-]{6,20}$/.test(id))return;const frame=document.createElement('iframe');frame.src='https://www.youtube-nocookie.com/embed/'+encodeURIComponent(id)+'?rel=0&autoplay=1&playsinline=1';frame.title=trigger.dataset.videoTitle||'Ambest video';frame.loading='lazy';frame.allow='accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share';frame.referrerPolicy='strict-origin-when-cross-origin';frame.allowFullscreen=true;frame.setAttribute('scrolling','no');player.replaceChildren(frame);frame.focus()},{once:true})});
+</script>`;
+
+function showreelSection() {
+  return `<section class="section media-feature"><div class="shell media-split"><div><p class="eyebrow">2026 showreel</p><h2>Ideas that move.<br>Stories that travel.</h2><p class="lede">A selection of Ambest film work across brand stories, corporate communication, products and campaigns—created for different audiences, formats and markets.</p><div class="actions"><a class="button signal" href="/video-production/results/">Explore featured films</a><a class="button secondary" href="/services/ad-films-video-content/">Ad Films &amp; Video Content</a></div></div>${youtubeEmbed("YaaTIMUeoNs","Ambest video production showreel 2026")}</div></section>`;
+}
+
+function projectVisualSection(slug) {
+  const visual = projectVisuals[slug];
+  if (!visual) return "";
+  return `<section class="section project-visual-section"><div class="shell project-visual-layout"><figure class="project-visual"><img src="/media/${visual.file}" alt="${e(visual.alt)}" loading="eager" decoding="async"><figcaption>Selected visual from the Ambest project archive.</figcaption></figure><div class="project-positioning"><p class="eyebrow">Why this work travels</p><h2>Clear thinking, expressed as a connected system.</h2><p class="lede">${e(visual.positioning)}</p><p>For global and multi-market teams, the transferable value is disciplined consistency: one strategic idea, adapted thoughtfully to each audience, channel and use.</p></div></div></section>`;
+}
+
+function projectFilmSection(slug) {
+  const film = projectFilms[slug];
+  if (!film) return "";
+  return `<section class="section production-example"><div class="shell media-split"><div><p class="eyebrow">Moving-image work</p><h2>See the brand in motion.</h2><p class="lede">This published film connects the case study to Ambest’s Ad Films &amp; Video Content capability.</p></div>${youtubeEmbed(film.id,film.title,film.poster)}</div></section>`;
+}
+
+function serviceMediaSection(service) {
+  const media = serviceMedia[service.id];
+  if (!media) return "";
+  const visual = media.type === "video"
+    ? youtubeEmbed(media.youtube, media.title)
+    : `<a class="service-image" href="${media.href}"><img src="/media/${media.file}" alt="${e(media.alt)}" loading="lazy" decoding="async"></a>`;
+  return `<section class="section media-feature"><div class="shell media-split"><div><p class="eyebrow">${e(media.eyebrow)}</p><h2>${e(media.heading)}</h2><p class="lede">${e(media.copy)}</p>${media.type === "image" ? `<a href="${media.href}">View the related work →</a>` : `<a href="/video-production/results/">Explore featured films →</a>`}</div>${visual}</div></section>`;
+}
+
+function filmGallery() {
+  return `<section class="section film-gallery-section"><div class="shell"><div class="section-head"><div class="section-kicker">Selected films</div><div><h2>Watch the work in context.</h2><p class="lede">A cross-section of Ambest’s current film portfolio, from brand and corporate storytelling to healthcare, advertising and creative technology.</p></div></div><div class="film-grid">${featuredFilms.map(film => `<article class="film-card">${youtubeEmbed(film.id,film.title)}<div class="film-copy"><span class="tag">${e(film.tag)}</span><h3>${e(film.title)}</h3></div></article>`).join("")}</div></div></section>`;
+}
+
+function videoServiceDirectory() {
+  return `<section class="section production-directory"><div class="shell"><div class="section-head"><div class="section-kicker">Production services</div><div><h2>Choose the kind of story you need to tell.</h2><p class="lede">Sixteen focused production capabilities, each with its own process, example and deliverables. They can work independently or as part of a connected brand programme.</p></div></div><div class="production-grid">${videoServices.map(service => `<article class="production-card"><a class="production-card-media" href="/video-production/${service.slug}/"><img src="/media/${service.poster}" alt="" loading="lazy" decoding="async"><span>${e(service.eyebrow)}</span></a><div class="production-card-copy"><h3><a href="/video-production/${service.slug}/">${e(service.name)}</a></h3><p>${e(service.fit)}</p><a class="production-card-link" href="/video-production/${service.slug}/">Explore ${e(service.name)} →</a></div></article>`).join("")}</div></div></section>`;
 }
 
 function relatedVideoServices(currentSlug) {
