@@ -16,6 +16,8 @@ The public deployment is indexable on the approved canonical hostname. Productio
 - `scripts/build.mjs` — copies the Worker and static media artifact to `dist/`.
 - `docs/` — evidence, migration, editorial, analytics, QA and launch records.
 
+The shared footer links to Ambest's six published social profiles: Facebook, X, YouTube, Instagram, LinkedIn and Pinterest. Their URLs are maintained in `socialProfiles` in `worker/index.js` and mirrored in the Organization structured data.
+
 ## Local review
 
 Use Node.js 22 or newer:
