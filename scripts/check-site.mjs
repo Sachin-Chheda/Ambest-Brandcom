@@ -5,8 +5,9 @@ import { resolve } from "node:path";
 const requiredRoutes = [
   "/", "/about/", "/contact/", "/get-a-quote/", "/privacy-policy/", "/disclaimer/",
   "/services/ad-films-video-content/", "/services/brand-communication-strategy/", "/services/creative-solutions/", "/services/digital-social/", "/services/website-development/", "/services/brand-experiences-partnerships/",
+  "/brand-creative/brand-strategy-management/", "/brand-creative/logo-visual-identity/", "/brand-creative/internal-branding/", "/brand-creative/exhibitions-events/",
   "/seo/", "/seo/how-it-works/", "/seo/results/", "/seo/technical-seo/", "/seo/local-seo/", "/seo/content-led-seo/", "/seo/ecommerce-seo/",
-  "/video-production/", "/video-production/how-it-works/", "/video-production/results/", "/video-production/ad-and-brand-films/", "/video-production/corporate-videos/", "/video-production/product-explainer-videos/", "/video-production/social-media-videos/",
+  "/video-production/", "/video-production/how-it-works/", "/video-production/results/", "/video-production/digital-ad-films/", "/video-production/brand-films/", "/video-production/corporate-communication-videos/", "/video-production/corporate-films/", "/video-production/brand-anthem-videos/", "/video-production/micro-drama/", "/video-production/ai-video-production/", "/video-production/testimonial-videos/", "/video-production/explainer-videos/", "/video-production/2d-animation/", "/video-production/product-videos/", "/video-production/social-media-videos/", "/video-production/drone-videography/", "/video-production/commercial-photography/", "/video-production/video-podcasts/", "/video-production/short-films/",
   "/digital-marketing/", "/digital-marketing/social-media-marketing/", "/digital-marketing/ppc-advertising/", "/digital-marketing/content-marketing/", "/digital-marketing/email-marketing/", "/digital-marketing/website-design-development/", "/digital-marketing/marketplace-management/", "/digital-marketing/strategy-consultation/", "/digital-marketing/results/",
   "/work/", "/work/purobien-nutrition/", "/work/shreeji-woodcraft/", "/work/bhoomi/", "/work/bryan-candy/", "/work/dr-amyn-rajani/", "/work/recons-group/", "/work/sigma-group/", "/work/red-moments/", "/work/aarya-menstrual-care/", "/work/timex-mica/",
   "/blog/", "/blog/category/seo/", "/blog/category/video-production/", "/blog/category/digital-marketing/", "/blog/corporate-video-production-process-explained/", "/blog/why-every-business-needs-corporate-video-2026/", "/blog/what-is-a-brand-anthem-video/", "/blog/advertising-agency-in-mumbai-boost-your-business-with-the-experts/", "/blog/video-production-services-in-mumbai-tips-you-should-know-before-getting-into/", "/blog/does-your-business-have-a-mobile-friendly-website/", "/blog/unveiling-the-power-of-brand-strategy-a-comprehensive-guide/"
@@ -81,19 +82,49 @@ for (const route of requiredRoutes.filter(route => route.startsWith("/work/") &&
   if (/What can be said responsibly|This section is editorial interpretation|The scope of this evidence/.test(pages.get(route) || "")) failures.push(`${route}: internal audit language remains in the public case study`);
 }
 const filmsHtml = pages.get("/video-production/results/") || "";
+const videoOverviewHtml = pages.get("/video-production/") || "";
+for (const route of ["digital-ad-films", "brand-films", "corporate-communication-videos", "corporate-films", "brand-anthem-videos", "micro-drama", "ai-video-production", "testimonial-videos", "explainer-videos", "2d-animation", "product-videos", "social-media-videos", "drone-videography", "commercial-photography", "video-podcasts", "short-films"]) {
+  if (!videoOverviewHtml.includes(`/video-production/${route}/`)) failures.push(`video production overview missing direct ${route} link`);
+}
+if (videoOverviewHtml.includes("/video-production/ad-and-brand-films/") || videoOverviewHtml.includes("No autoplay wall")) failures.push("video production overview still contains legacy offer content");
+if (!videoOverviewHtml.includes("Sixteen focused production services") || (videoOverviewHtml.match(/class="production-card"/g) || []).length !== 16) failures.push("video production overview directory is incomplete");
 if ((filmsHtml.match(/data-video-id=/g) || []).length < 6) failures.push("video results: six verified film thumbnails are missing");
 if (filmsHtml.includes("iframe srcdoc=") || !filmsHtml.includes("scrolling','no")) failures.push("video results: no-scroll click-to-play player is missing");
+for (const route of requiredRoutes.filter(route => /^\/video-production\/(?!how-it-works|results)[^/]+\/$/.test(route))) {
+  const html = pages.get(route) || "";
+  if (!html.includes('class="production-visual"') || !html.includes('class="production-video"')) failures.push(`${route}: aligned service image or video is missing`);
+  if (!html.includes("India + global markets") || !html.includes("Mumbai-rooted production")) failures.push(`${route}: global production positioning is missing`);
+  if (html.includes("iframe srcdoc=")) failures.push(`${route}: scrolling video thumbnail iframe remains`);
+}
+for (const route of requiredRoutes.filter(route => route.startsWith("/brand-creative/"))) {
+  const html = pages.get(route) || "";
+  if (!html.includes('class="production-visual"') || !html.includes("Global-ready by design")) failures.push(`${route}: brand visual or global positioning is missing`);
+}
+const aboutHtml = pages.get("/about/") || "";
+if (!aboutHtml.includes("<video") || !aboutHtml.includes("BTS-3.mp4") || !aboutHtml.includes("playsinline")) failures.push("about: aligned behind-the-scenes video is missing");
+const shreejiHtml = pages.get("/work/shreeji-woodcraft/") || "";
+const bryanHtml = pages.get("/work/bryan-candy/") || "";
+if (!shreejiHtml.includes('data-video-id="kw48Puf-Xxg"')) failures.push("Shreeji case study: verified film is missing");
+if (!bryanHtml.includes('data-video-id="Ohj3Uh9IEjo"')) failures.push("Bryan & Candy case study: verified film is missing");
+const reconsHtml = pages.get("/work/recons-group/") || "";
+if (!reconsHtml.includes('<figure class="project-visual">') || !reconsHtml.includes(".project-visual img{display:block;width:100%;height:min(52vw,570px);min-height:360px;object-fit:contain}")) failures.push("Recons case study: full-containment image treatment is missing");
 const mediaDir = resolve(import.meta.dirname, "..", "public", "media");
 if (!existsSync(mediaDir) || readdirSync(mediaDir).length < 19) failures.push("media: expected imported Ambest asset set is incomplete");
 const missing = await request("/definitely-missing/");
 if (missing.status !== 404) failures.push(`404 check: got ${missing.status}`);
 const redirect = await request("/about-us/", {redirect:"manual"});
 if (redirect.status !== 301 || !redirect.headers.get("location")?.endsWith("/about/")) failures.push("legacy redirect check failed");
+const videoAlias = await request("/video-production/ad-and-brand-films/", {redirect:"manual"});
+if (videoAlias.status !== 301 || !videoAlias.headers.get("location")?.endsWith("/video-production/digital-ad-films/")) failures.push("video service alias redirect failed");
+const nestedLegacyService = await request("/internal-brand/wall-branding-murals/", {redirect:"manual"});
+if (nestedLegacyService.status !== 301 || !nestedLegacyService.headers.get("location")?.endsWith("/brand-creative/internal-branding/")) failures.push("nested legacy service redirect failed");
 const privateMap = await request("/sitemap.xml");
 if ((await privateMap.text()).includes("<url>")) failures.push("private sitemap should contain no URLs");
 const publicMap = await request("/sitemap.xml", {}, {PUBLIC_SITE:"true"});
 const publicMapText = await publicMap.text();
 if (!publicMapText.includes("/seo/how-it-works/")) failures.push("public sitemap missing required route");
+if (!publicMapText.includes("/video-production/brand-anthem-videos/") || publicMapText.includes("/video-production/ad-and-brand-films/")) failures.push("public sitemap video service routes are incomplete or include aliases");
+if (!publicMapText.includes("/brand-creative/logo-visual-identity/")) failures.push("public sitemap missing brand and creative routes");
 if (!publicMapText.includes("https://www.ambestbrandcom.com/seo/how-it-works/")) failures.push("public sitemap uses the wrong canonical host");
 const publicRobots = await (await request("/robots.txt", {}, {PUBLIC_SITE:"true"})).text();
 if (!publicRobots.includes("Sitemap: https://www.ambestbrandcom.com/sitemap.xml") || publicRobots.includes("Disallow: /\n")) failures.push("public robots.txt is not crawlable or uses the wrong sitemap host");
@@ -102,7 +133,8 @@ const protectedQuoteHtml = await protectedQuote.text();
 if (!protectedQuoteHtml.includes('class="cf-turnstile"') || !protectedQuoteHtml.includes('data-action="quote-enquiry"') || !protectedQuoteHtml.includes("challenges.cloudflare.com/turnstile/v0/api.js")) failures.push("quote form: Turnstile widget is not rendered when configured");
 if (!protectedQuoteHtml.includes("sachin@ambestmedia.com") || protectedQuoteHtml.includes("sachin@ambestbrandcom.in")) failures.push("quote form: enquiry contact is not sachin@ambestmedia.com");
 if (!protectedQuoteHtml.includes('placeholder="example.com"') || protectedQuoteHtml.includes('placeholder="https://"')) failures.push("quote form: website field still requires a protocol");
-for (const removedField of ['company','country','budget','timing']) if (protectedQuoteHtml.includes(`id="${removedField}"`)) failures.push(`quote form: unnecessary ${removedField} field remains visible`);
+if (!protectedQuoteHtml.includes('id="country"') || !protectedQuoteHtml.includes('Select country / region') || !protectedQuoteHtml.includes('sachin@ambestmedia.com')) failures.push("quote form: country selector or delivery address is missing");
+for (const removedField of ['company','budget','timing']) if (protectedQuoteHtml.includes(`id="${removedField}"`)) failures.push(`quote form: unnecessary ${removedField} field remains visible`);
 
 const canonicalCases = [
   ["https://ambestbrandcom.com/", "https://www.ambestbrandcom.com/"],
@@ -120,7 +152,7 @@ if (!canonicalHomeHtml.includes('<meta name="robots" content="index,follow">') |
 
 const invalid = await request("/api/quote", {method:"POST",headers:{"content-type":"application/json"},body:"{}"}, {DEVELOPMENT_MODE:"true"});
 if (invalid.status !== 422) failures.push(`invalid form: expected 422, got ${invalid.status}`);
-const payload = {name:"QA Test",email:"qa@example.com",selection:"seo-foundation",goal:"Validate that the development adapter accepts a complete structured enquiry.",idempotencyKey:"qa-check-0001",website_confirm:""};
+const payload = {name:"QA Test",email:"qa@example.com",country:"India",selection:"seo-foundation",goal:"Validate that the development adapter accepts a complete structured enquiry.",idempotencyKey:"qa-check-0001",website_confirm:""};
 const accepted = await request("/api/quote", {method:"POST",headers:{"content-type":"application/json"},body:JSON.stringify(payload)}, {DEVELOPMENT_MODE:"true"});
 if (accepted.status !== 202) failures.push(`valid development form: expected 202, got ${accepted.status}`);
 const first = await accepted.json();
@@ -139,6 +171,7 @@ try {
   if (emailed.status !== 202) failures.push(`configured production form: expected 202, got ${emailed.status}`);
   if (deliveredEmail?.to !== "sachin@ambestmedia.com" || deliveredEmail?.replyTo !== "prospect@example.com") failures.push("configured production form: email delivery fields are incorrect");
   if (!deliveredEmail?.text?.includes("Website: https://example.com/")) failures.push("configured production form: plain website domain was not normalized automatically");
+  if (!deliveredEmail?.text?.includes("Country / region: India")) failures.push("configured production form: country was not included in the delivery email");
 } finally {
   globalThis.fetch = originalFetch;
 }
@@ -151,4 +184,3 @@ if (failures.length) {
   process.exit(1);
 }
 console.log(`Site checks passed: ${requiredRoutes.length} routes, ${checkedLinks.size} internal destinations, form validation/idempotency and preview indexing controls.`);
-
