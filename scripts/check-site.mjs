@@ -164,7 +164,12 @@ if (!protectedQuoteHtml.includes('class="cf-turnstile"') || !protectedQuoteHtml.
 if (!protectedQuoteHtml.includes("sachin@ambestmedia.com") || protectedQuoteHtml.includes("sachin@ambestbrandcom.in")) failures.push("quote form: enquiry contact is not sachin@ambestmedia.com");
 if (!protectedQuoteHtml.includes('placeholder="example.com"') || protectedQuoteHtml.includes('placeholder="https://"')) failures.push("quote form: website field still requires a protocol");
 if (!protectedQuoteHtml.includes('id="country"') || !protectedQuoteHtml.includes('Select country / region') || !protectedQuoteHtml.includes('sachin@ambestmedia.com')) failures.push("quote form: country selector or delivery address is missing");
+if (protectedQuoteHtml.includes('<form id="quote-form" novalidate') || !protectedQuoteHtml.includes('quoteForm.reportValidity()') || !protectedQuoteHtml.includes('name="goal" minlength="5"') || !protectedQuoteHtml.includes('id="form-status" class="form-status" role="status" aria-live="polite" tabindex="-1"')) failures.push("quote form: accessible browser validation is not enabled");
 for (const removedField of ['company','budget','timing']) if (protectedQuoteHtml.includes(`id="${removedField}"`)) failures.push(`quote form: unnecessary ${removedField} field remains visible`);
+for (const route of ["corporate-communication-videos","micro-drama","testimonial-videos","explainer-videos","2d-animation","commercial-photography","video-podcasts","short-films"]) {
+  const html = pages.get(`/video-production/${route}/`) || "";
+  if (/<figure class="production-visual">[\s\S]*?<img[^>]+src="\/media\/service-(?:corporate-communication|micro-drama|testimonial|explainer|2d-animation|photography|video-podcast|short-film)\.webp"/.test(html)) failures.push(`video production ${route}: low-visibility icon is still used as the hero image`);
+}
 
 const canonicalCases = [
   ["https://ambestbrandcom.com/", "https://www.ambestbrandcom.com/"],
@@ -202,6 +207,13 @@ try {
   if (deliveredEmail?.to !== "sachin@ambestmedia.com" || deliveredEmail?.replyTo !== "prospect@example.com") failures.push("configured production form: email delivery fields are incorrect");
   if (!deliveredEmail?.text?.includes("Website: https://example.com/")) failures.push("configured production form: plain website domain was not normalized automatically");
   if (!deliveredEmail?.text?.includes("Country / region: India")) failures.push("configured production form: country was not included in the delivery email");
+  const originalConsoleError = console.error;
+  try {
+    console.error = () => {};
+    const failed = await worker.fetch(new Request("https://www.ambestbrandcom.com/api/quote",{method:"POST",headers:{"content-type":"application/json"},body:JSON.stringify({...productionPayload,idempotencyKey:"qa-email-provider-failure"})}),{TURNSTILE_SECRET_KEY:"secret-key",EMAIL:{send:async()=>{throw Object.assign(new Error("Sender domain is not onboarded"),{code:"E_SENDER_DOMAIN_NOT_AVAILABLE"});}}},{});
+    const failureBody = await failed.json();
+    if (failed.status !== 502 || failureBody.errorCode !== "E_SENDER_DOMAIN_NOT_AVAILABLE") failures.push("configured production form: provider rejection is not surfaced safely");
+  } finally { console.error = originalConsoleError; }
 } finally {
   globalThis.fetch = originalFetch;
 }

@@ -438,23 +438,64 @@ function servicePage(service, publicSite) {
   return html;
 }
 
+const quoteClientScript = `const quoteForm=document.querySelector('#quote-form');
+quoteForm?.addEventListener('submit',async event=>{
+  event.preventDefault();
+  if(!quoteForm.reportValidity())return;
+  const status=document.querySelector('#form-status');
+  const submit=quoteForm.querySelector('button[type=submit]');
+  const website=quoteForm.elements.namedItem('website');
+  const data=Object.fromEntries(new FormData(quoteForm));
+  if(data.website){
+    try{
+      const candidate=/^https?:\\/\\//i.test(data.website)?data.website:'https://'+data.website;
+      const parsed=new URL(candidate);
+      if(!['http:','https:'].includes(parsed.protocol)||!parsed.hostname.includes('.'))throw new Error();
+    }catch{
+      website.setCustomValidity('Enter a website like example.com, or leave this optional field blank.');
+      website.reportValidity();
+      website.addEventListener('input',()=>website.setCustomValidity(''),{once:true});
+      return;
+    }
+  }
+  if(quoteForm.querySelector('.cf-turnstile')&&!data['cf-turnstile-response']){
+    status.hidden=false;status.dataset.state='error';
+    status.textContent='Please complete the anti-spam check, then try again. You can also email sachin@ambestmedia.com.';
+    status.focus();return;
+  }
+  status.hidden=false;status.dataset.state='';status.textContent='Sending your enquiry…';submit.disabled=true;
+  data.idempotencyKey=quoteForm.dataset.idempotency||crypto.randomUUID();
+  quoteForm.dataset.idempotency=data.idempotencyKey;
+  try{
+    const response=await fetch('/api/quote',{method:'POST',headers:{'content-type':'application/json'},body:JSON.stringify(data)});
+    const result=await response.json();
+    if(!response.ok)throw new Error(result.message||'The enquiry could not be delivered.');
+    status.dataset.state='success';status.textContent='Your enquiry has been received. Reference: '+result.requestId;
+    quoteForm.reset();delete quoteForm.dataset.idempotency;globalThis.turnstile?.reset();
+  }catch(error){
+    status.dataset.state='error';status.textContent=(error?.message||'The enquiry could not be sent.')+' You can also email sachin@ambestmedia.com.';
+    globalThis.turnstile?.reset();
+  }finally{submit.disabled=false;status.focus()}
+});`;
+
 function quotePage(html, url, env, publicSite) {
   const selected = url.searchParams.get("service") || "";
   const options = mainServices.map(service => `<option value="${service.id}" ${selected===service.id?'selected':''}>${e(service.name)}</option>`).join("");
   const countryOptions = countryNames.map(country => `<option value="${e(country)}">${e(country)}</option>`).join("");
-  const simpleForm = `<form id="quote-form" novalidate><div class="form-grid"><div class="field"><label for="name">Name</label><input id="name" name="name" autocomplete="name" maxlength="100" required></div><div class="field"><label for="email">Email</label><input id="email" name="email" type="email" autocomplete="email" maxlength="254" required></div><div class="field"><label for="phone">Phone <small>(optional)</small></label><input id="phone" name="phone" type="tel" autocomplete="tel" maxlength="40"></div><div class="field"><label for="country">Country / region</label><select id="country" name="country" autocomplete="country-name" required><option value="" selected disabled>Select country / region</option>${countryOptions}</select></div><div class="field full"><label for="website">Website <small>(optional)</small></label><input id="website" name="website" type="text" inputmode="url" autocomplete="url" maxlength="500" placeholder="example.com"></div><div class="field full"><label for="selection">How can we help?</label><select id="selection" name="selection" required><option value="not-sure" ${selected?'':'selected'}>Not sure yet</option>${options}</select></div><div class="field full"><label for="goal">Your message</label><textarea id="goal" name="goal" maxlength="3000" placeholder="Tell us briefly what you would like to create or improve." required></textarea></div><div class="honeypot" aria-hidden="true"><label for="website_confirm">Leave this field blank</label><input id="website_confirm" name="website_confirm" tabindex="-1" autocomplete="off"></div><div class="field full"><button class="button" type="submit">Send enquiry</button><p class="no-js-note">Your complete enquiry will be sent to ${defaultLeadRecipient}. We will use these details only to respond. See the <a href="/privacy-policy/">privacy notice</a>.</p></div></div></form>`;
+  const simpleForm = `<form id="quote-form"><div class="form-grid"><div class="field"><label for="name">Name</label><input id="name" name="name" autocomplete="name" maxlength="100" required></div><div class="field"><label for="email">Email</label><input id="email" name="email" type="email" autocomplete="email" maxlength="254" required></div><div class="field"><label for="phone">Phone <small>(optional)</small></label><input id="phone" name="phone" type="tel" autocomplete="tel" maxlength="40"></div><div class="field"><label for="country">Country / region</label><select id="country" name="country" autocomplete="country-name" required><option value="" selected disabled>Select country / region</option>${countryOptions}</select></div><div class="field full"><label for="website">Website <small>(optional)</small></label><input id="website" name="website" type="text" inputmode="url" autocomplete="url" maxlength="500" placeholder="example.com"></div><div class="field full"><label for="selection">How can we help?</label><select id="selection" name="selection" required><option value="not-sure" ${selected?'':'selected'}>Not sure yet</option>${options}</select></div><div class="field full"><label for="goal">Your message</label><textarea id="goal" name="goal" minlength="5" maxlength="3000" placeholder="Tell us briefly what you would like to create or improve." required></textarea></div><div class="honeypot" aria-hidden="true"><label for="website_confirm">Leave this field blank</label><input id="website_confirm" name="website_confirm" tabindex="-1" autocomplete="off"></div><div class="field full"><button class="button" type="submit">Send enquiry</button><p class="no-js-note">Your complete enquiry will be sent to ${defaultLeadRecipient}. We will use these details only to respond. See the <a href="/privacy-policy/">privacy notice</a>.</p><noscript><p>Please email <a href="mailto:${defaultLeadRecipient}">${defaultLeadRecipient}</a>; the online form requires JavaScript.</p></noscript></div></div></form>`;
   html = rebrand(html, "/get-a-quote/", publicSite)
     .replace(/<form id="quote-form"[\s\S]*?<\/form>/, simpleForm)
+    .replace(/const quoteForm=document.querySelector\('#quote-form'\);[\s\S]*?(?=<\/script>)/, quoteClientScript)
+    .replace('<div id="form-status" class="form-status" role="status" aria-live="polite" hidden>', '<div id="form-status" class="form-status" role="status" aria-live="polite" tabindex="-1" hidden>')
     .replace("Describe the goal without writing the entire brief.", "Tell us how we can help.")
     .replace('Name the business or project, the change you want, what already exists and the timing if known. Budget and phone are optional; "Not sure yet" is an acceptable answer.', "Share the essentials and we will take it from there. You can enter a website as example.com—we add https:// automatically.")
-    .replace("A submission is only confirmed after the server-side delivery destination accepts it.", `All enquiries are delivered securely to ${defaultLeadRecipient}.`);
+    .replace("A submission is only confirmed after the server-side delivery destination accepts it.", `Enquiries are addressed to ${defaultLeadRecipient}. We confirm submission only after the email service accepts it.`);
   const deliveryReady = Boolean(env.EMAIL?.send || env.LEAD_WEBHOOK_URL);
   if (env.TURNSTILE_SITE_KEY) {
     const widget = `<div class="field full turnstile-field"><div class="cf-turnstile" data-sitekey="${e(env.TURNSTILE_SITE_KEY)}" data-action="quote-enquiry" data-theme="light"></div><small>This verification helps prevent automated spam.</small></div>`;
     html = html
       .replace('<div class="field full"><button class="button" type="submit">Send enquiry</button>', `${widget}<div class="field full"><button class="button" type="submit">Send enquiry</button>`)
-      .replace("</body>", '<script src="https://challenges.cloudflare.com/turnstile/v0/api.js" async defer></script></body>')
-      .replace("quoteForm.reset()", "quoteForm.reset();globalThis.turnstile?.reset()");
+      .replace("</body>", '<script src="https://challenges.cloudflare.com/turnstile/v0/api.js" async defer></script></body>');
   }
   if (env.TURNSTILE_SITE_KEY && env.TURNSTILE_SECRET_KEY && deliveryReady) {
     html = html.replace(/<p class="status-banner">[\s\S]*?<\/p>/, "");
@@ -486,8 +527,14 @@ async function handleQuote(request, env) {
   if (env.DEVELOPMENT_MODE !== "true") {
     if (!env.TURNSTILE_SECRET_KEY || (!env.EMAIL?.send && !env.LEAD_WEBHOOK_URL)) return json({message:"Secure enquiry delivery is not configured yet."},503);
     if (!clean["cf-turnstile-response"]) return json({message:"Complete the anti-spam check and try again."},422);
-    const verify = await fetch("https://challenges.cloudflare.com/turnstile/v0/siteverify",{method:"POST",headers:{"content-type":"application/x-www-form-urlencoded"},body:new URLSearchParams({secret:env.TURNSTILE_SECRET_KEY,response:clean["cf-turnstile-response"],remoteip:request.headers.get("cf-connecting-ip")||"",idempotency_key:crypto.randomUUID()})});
-    const result = await verify.json();
+    let result;
+    try {
+      const verify = await fetch("https://challenges.cloudflare.com/turnstile/v0/siteverify",{method:"POST",headers:{"content-type":"application/x-www-form-urlencoded"},body:new URLSearchParams({secret:env.TURNSTILE_SECRET_KEY,response:clean["cf-turnstile-response"],remoteip:request.headers.get("cf-connecting-ip")||"",idempotency_key:crypto.randomUUID()})});
+      if (!verify.ok) throw new Error("Turnstile unavailable");
+      result = await verify.json();
+    } catch {
+      return json({message:`The anti-spam service is temporarily unavailable. Please retry or email ${defaultLeadRecipient}.`},503);
+    }
     if (!result.success || result.action !== "quote-enquiry" || result.hostname !== url.hostname) return json({message:"The anti-spam check expired or was invalid. Please try again."},422);
   }
   const requestId = crypto.randomUUID();
@@ -500,9 +547,12 @@ async function handleQuote(request, env) {
       const textBody = rows.filter(([,value])=>value).map(([label,value])=>`${label}: ${value}`).join("\n\n");
       const htmlBody = `<h1>New Ambest website enquiry</h1>${rows.filter(([,value])=>value).map(([label,value])=>`<p><strong>${e(label)}</strong><br>${e(value).replaceAll("\n","<br>")}</p>`).join("")}`;
       try {
-        await env.EMAIL.send({to:recipient,from:sender,replyTo:clean.email,subject:`New website enquiry · ${clean.name} · ${clean.selection}`,text:textBody,html:htmlBody});
-      } catch {
-        return json({message:`The enquiry could not be delivered. Please email ${defaultLeadRecipient}.`},502);
+        const delivery = await env.EMAIL.send({to:recipient,from:sender,replyTo:clean.email,subject:`New website enquiry · ${clean.name} · ${clean.selection}`,text:textBody,html:htmlBody});
+        if (!delivery?.messageId) throw Object.assign(new Error("Email provider did not confirm delivery"),{code:"E_NO_MESSAGE_ID"});
+      } catch (error) {
+        const code = /^E_[A-Z_]+$/.test(String(error?.code||"")) ? error.code : "E_EMAIL_DELIVERY_FAILED";
+        console.error("Ambest enquiry email delivery failed",{code,requestId});
+        return json({message:`The enquiry could not be delivered. Please email ${defaultLeadRecipient}.`,errorCode:code},502);
       }
     } else {
       let endpoint; try { endpoint=new URL(env.LEAD_WEBHOOK_URL); if (endpoint.protocol !== "https:") throw new Error(); } catch { return json({message:"The approved delivery destination is invalid."},503); }
