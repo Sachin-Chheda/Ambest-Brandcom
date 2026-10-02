@@ -473,7 +473,11 @@ quoteForm?.addEventListener('submit',async event=>{
     status.dataset.state='success';status.textContent='Your enquiry has been received. Reference: '+result.requestId;
     quoteForm.reset();delete quoteForm.dataset.idempotency;globalThis.turnstile?.reset();
   }catch(error){
-    status.dataset.state='error';status.textContent=(error?.message||'The enquiry could not be sent.')+' You can also email sachin@ambestmedia.com.';
+    const message=error?.message||'The enquiry could not be sent.';
+    status.dataset.state='error';status.textContent=message+(message.includes('sachin@ambestmedia.com')?'':' You can also email sachin@ambestmedia.com.');
+    const subject='Ambest website enquiry — '+(data.name||'New enquiry');
+    const body=[['Name',data.name],['Email',data.email],['Phone',data.phone],['Country / region',data.country],['Website',data.website],['Service',data.selection],['Message',data.goal]].filter(([,value])=>value).map(([label,value])=>label+': '+value).join('\\n\\n');
+    const fallback=document.createElement('a');fallback.href='mailto:sachin@ambestmedia.com?subject='+encodeURIComponent(subject)+'&body='+encodeURIComponent(body);fallback.textContent=' Open this enquiry in your email app.';status.append(fallback);
     globalThis.turnstile?.reset();
   }finally{submit.disabled=false;status.focus()}
 });`;
