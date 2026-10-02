@@ -5,7 +5,7 @@ import worker from "../worker/index.js";
 
 const port = Number(process.env.PORT || 4173);
 const publicRoot = resolve(import.meta.dirname, "..", "public");
-const contentTypes = {".jpg":"image/jpeg",".jpeg":"image/jpeg",".png":"image/png",".svg":"image/svg+xml",".webp":"image/webp"};
+const contentTypes = {".jpg":"image/jpeg",".jpeg":"image/jpeg",".png":"image/png",".svg":"image/svg+xml",".webp":"image/webp",".mp4":"video/mp4"};
 const assets = {
   async fetch(request) {
     const pathname = decodeURIComponent(new URL(request.url).pathname);

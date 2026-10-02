@@ -46,10 +46,18 @@ for (const [route, html] of pages) {
     const href = match[1];
     if (checkedLinks.has(href) || href.startsWith("/api/")) continue;
     checkedLinks.add(href);
+    if (href.startsWith("/media/")) {
+      if (!existsSync(resolve(import.meta.dirname, "..", "public", href.slice(1)))) failures.push(`${route}: missing static asset ${href}`);
+      continue;
+    }
     const response = await request(href);
     if (response.status >= 400) failures.push(`${route}: broken internal link ${href} (${response.status})`);
   }
 }
+
+const mediaDir = resolve(import.meta.dirname, "..", "public", "media");
+const mediaReferences = new Set([...pages.values()].flatMap(html => [...html.matchAll(/\/media\/([A-Za-z0-9._-]+)/g)].map(match => match[1])));
+for (const file of mediaReferences) if (!existsSync(resolve(mediaDir, file))) failures.push(`media: missing referenced asset ${file}`);
 
 const publicHome = await request("/", {}, {PUBLIC_SITE:"true"});
 const publicHomeHtml = await publicHome.text();
@@ -95,6 +103,10 @@ for (const route of requiredRoutes.filter(route => route.startsWith("/work/") &&
   if (!pages.get(route)?.includes("Why this work travels")) failures.push(`${route}: global case-study positioning is missing`);
   if (!pages.get(route)?.includes("Brand Communication &amp; Strategy") && !pages.get(route)?.includes("Creative Solutions")) failures.push(`${route}: core brand/creative service positioning is missing`);
   if (/What can be said responsibly|This section is editorial interpretation|The scope of this evidence/.test(pages.get(route) || "")) failures.push(`${route}: internal audit language remains in the public case study`);
+  if ((pages.get(route)?.match(/class="archive-card"/g) || []).length < 1) failures.push(`${route}: additional project imagery is missing`);
+}
+for (const route of requiredRoutes.filter(route => route.startsWith("/services/"))) {
+  if ((pages.get(route)?.match(/class="archive-card"/g) || []).length < 3) failures.push(`${route}: service gallery needs at least three relevant images`);
 }
 const filmsHtml = pages.get("/video-production/results/") || "";
 const videoOverviewHtml = pages.get("/video-production/") || "";
@@ -110,10 +122,12 @@ for (const route of requiredRoutes.filter(route => /^\/video-production\/(?!how-
   if (!html.includes('class="production-visual"') || !html.includes('class="production-video"')) failures.push(`${route}: aligned service image or video is missing`);
   if (!html.includes("India + global markets") || !html.includes("Mumbai-rooted production")) failures.push(`${route}: global production positioning is missing`);
   if (html.includes("iframe srcdoc=")) failures.push(`${route}: scrolling video thumbnail iframe remains`);
+  if ((html.match(/class="archive-card"/g) || []).length < 2) failures.push(`${route}: production gallery needs multiple images`);
 }
 for (const route of requiredRoutes.filter(route => route.startsWith("/brand-creative/"))) {
   const html = pages.get(route) || "";
   if (!html.includes('class="production-visual"') || !html.includes("Global-ready by design")) failures.push(`${route}: brand visual or global positioning is missing`);
+  if ((html.match(/class="archive-card"/g) || []).length < 2) failures.push(`${route}: brand gallery needs multiple images`);
 }
 const aboutHtml = pages.get("/about/") || "";
 if (!aboutHtml.includes("<video") || !aboutHtml.includes("BTS-3.mp4") || !aboutHtml.includes("playsinline")) failures.push("about: aligned behind-the-scenes video is missing");
@@ -123,7 +137,8 @@ if (!shreejiHtml.includes('data-video-id="kw48Puf-Xxg"')) failures.push("Shreeji
 if (!bryanHtml.includes('data-video-id="Ohj3Uh9IEjo"')) failures.push("Bryan & Candy case study: verified film is missing");
 const reconsHtml = pages.get("/work/recons-group/") || "";
 if (!reconsHtml.includes('<figure class="project-visual">') || !reconsHtml.includes(".project-visual img{display:block;width:100%;height:min(52vw,570px);min-height:360px;object-fit:contain}")) failures.push("Recons case study: full-containment image treatment is missing");
-const mediaDir = resolve(import.meta.dirname, "..", "public", "media");
+const bhoomiHtml = pages.get("/work/bhoomi/") || "";
+if (!bhoomiHtml.includes('class="portrait-video"') || !bhoomiHtml.includes('/media/gallery-bhoomi-reel.mp4') || !bhoomiHtml.includes('preload="none"')) failures.push("Bhoomi case study: aligned social reel is missing");
 if (!existsSync(mediaDir) || readdirSync(mediaDir).length < 19) failures.push("media: expected imported Ambest asset set is incomplete");
 const missing = await request("/definitely-missing/");
 if (missing.status !== 404) failures.push(`404 check: got ${missing.status}`);
