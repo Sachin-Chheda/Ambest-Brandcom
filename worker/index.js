@@ -586,6 +586,15 @@ function quotePage(html, url, env, publicSite) {
   return html;
 }
 
+function privacyPage(html, env, publicSite) {
+  html = rebrand(html, "/privacy-policy/", publicSite);
+  if (env.LEAD_DELIVERY_VERIFIED === "true") return html;
+  return html
+    .replaceAll("Privacy information requires owner and legal approval before launch.", "Privacy information is under review.")
+    .replace("The quote form is designed to collect the name, email, organization, selected scope and project goal needed to respond. Phone, website, location, budget and timing are optional. No marketing subscription is bundled into the enquiry.", "The current enquiry form asks for name, email, country or region, service interest and a project message; phone and website are optional. It prepares an email for the visitor to send from their own email app. The website does not submit or store those field values. No marketing subscription is bundled into the enquiry.")
+    .replace("Production launch is blocked until Ambest approves the lead recipient or persistent system, retention rules, processors and final policy wording. The implementation is designed not to send names, email addresses, phone numbers or free-text project details to analytics.", "Ambest should approve the final privacy wording, processors and retention practices. If you send the prepared enquiry, your email provider and Ambest's mailbox process the message. The website does not send the form's field values to analytics.");
+}
+
 const acceptedIds = new Map();
 const fieldLimits = {name:100,email:254,company:120,phone:40,selection:80,goal:3000,website:500,country:100,budget:100,timing:100,website_confirm:200,idempotencyKey:100,"cf-turnstile-response":2048};
 async function handleQuote(request, env) {
@@ -732,7 +741,7 @@ export default {
     const service = mainServices.find(item => path === `/services/${item.id}/`);
     const videoService = videoServices.find(item => path === `/video-production/${item.slug}/`);
     const brandCreativeService = brandCreativeServices.find(item => path === `/brand-creative/${item.slug}/`);
-    let html = videoService ? videoServicePage(videoService,publicSite) : brandCreativeService ? brandCreativePage(brandCreativeService,publicSite) : service ? servicePage(service,publicSite) : path === "/services/" ? serviceIndexPage(publicSite) : generatedPages[path] ? (path==="/get-a-quote/" ? quotePage(generatedPages[path],url,env,publicSite) : rebrand(generatedPages[path],path,publicSite)) : null;
+    let html = videoService ? videoServicePage(videoService,publicSite) : brandCreativeService ? brandCreativePage(brandCreativeService,publicSite) : service ? servicePage(service,publicSite) : path === "/services/" ? serviceIndexPage(publicSite) : generatedPages[path] ? (path==="/get-a-quote/" ? quotePage(generatedPages[path],url,env,publicSite) : path==="/privacy-policy/" ? privacyPage(generatedPages[path],env,publicSite) : rebrand(generatedPages[path],path,publicSite)) : null;
     if (html) return new Response(request.method==="HEAD"?null:addSharingMetadata(html,path),{headers:htmlHeaders});
     return new Response(request.method==="HEAD"?null:missingPage(path),{status:404,headers:{...htmlHeaders,"x-robots-tag":"noindex"}});
   }

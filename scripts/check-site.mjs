@@ -170,6 +170,8 @@ const directQuote = await request("/get-a-quote/", {}, {PUBLIC_SITE:"true",TURNS
 const directQuoteHtml = await directQuote.text();
 if (!directQuoteHtml.includes('data-delivery-mode="email-app"') || !directQuoteHtml.includes('Prepare enquiry email') || !directQuoteHtml.includes('The website does not send or store your enquiry.') || directQuoteHtml.includes('class="cf-turnstile"')) failures.push("quote form: direct-email mode should be honest and should not require Turnstile");
 if (!directQuoteHtml.includes('Your enquiry has not been sent yet.') || !directQuoteHtml.includes('Open prepared email to sachin@ambestmedia.com')) failures.push("quote form: prepared email instructions are missing");
+const directPrivacyHtml = await (await request("/privacy-policy/", {}, {PUBLIC_SITE:"true"})).text();
+if (!directPrivacyHtml.includes("Privacy information is under review.") || !directPrivacyHtml.includes("The website does not submit or store those field values.") || directPrivacyHtml.includes("Production launch is blocked")) failures.push("privacy page: direct-email behavior is not described accurately");
 const protectedQuote = await request("/get-a-quote/", {}, {PUBLIC_SITE:"true",TURNSTILE_SITE_KEY:"site-key",TURNSTILE_SECRET_KEY:"secret-key",EMAIL:{send:async()=>({messageId:"render-test"})},LEAD_DELIVERY_VERIFIED:"true"});
 const protectedQuoteHtml = await protectedQuote.text();
 if (!protectedQuoteHtml.includes('class="cf-turnstile"') || !protectedQuoteHtml.includes('data-action="quote-enquiry"') || !protectedQuoteHtml.includes("challenges.cloudflare.com/turnstile/v0/api.js")) failures.push("quote form: Turnstile widget is not rendered when configured");
