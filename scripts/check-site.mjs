@@ -3,7 +3,7 @@ import { existsSync, readdirSync } from "node:fs";
 import { resolve } from "node:path";
 
 const requiredRoutes = [
-  "/", "/about/", "/contact/", "/get-a-quote/", "/privacy-policy/", "/disclaimer/",
+  "/", "/about/", "/contact/", "/get-a-quote/", "/privacy-policy/", "/disclaimer/", "/services/",
   "/services/ad-films-video-content/", "/services/brand-communication-strategy/", "/services/creative-solutions/", "/services/digital-social/", "/services/website-development/", "/services/brand-experiences-partnerships/",
   "/brand-creative/brand-strategy-management/", "/brand-creative/logo-visual-identity/", "/brand-creative/internal-branding/", "/brand-creative/exhibitions-events/",
   "/seo/", "/seo/how-it-works/", "/seo/results/", "/seo/technical-seo/", "/seo/local-seo/", "/seo/content-led-seo/", "/seo/ecommerce-seo/",
@@ -105,7 +105,7 @@ for (const route of requiredRoutes.filter(route => route.startsWith("/work/") &&
   if (/What can be said responsibly|This section is editorial interpretation|The scope of this evidence/.test(pages.get(route) || "")) failures.push(`${route}: internal audit language remains in the public case study`);
   if ((pages.get(route)?.match(/class="archive-card"/g) || []).length < 1) failures.push(`${route}: additional project imagery is missing`);
 }
-for (const route of requiredRoutes.filter(route => route.startsWith("/services/"))) {
+for (const route of requiredRoutes.filter(route => route.startsWith("/services/") && route !== "/services/")) {
   if ((pages.get(route)?.match(/class="archive-card"/g) || []).length < 3) failures.push(`${route}: service gallery needs at least three relevant images`);
 }
 const filmsHtml = pages.get("/video-production/results/") || "";
@@ -114,7 +114,12 @@ for (const route of ["digital-ad-films", "brand-films", "corporate-communication
   if (!videoOverviewHtml.includes(`/video-production/${route}/`)) failures.push(`video production overview missing direct ${route} link`);
 }
 if (videoOverviewHtml.includes("/video-production/ad-and-brand-films/") || videoOverviewHtml.includes("No autoplay wall")) failures.push("video production overview still contains legacy offer content");
-if (!videoOverviewHtml.includes("Sixteen focused production services") || (videoOverviewHtml.match(/class="production-card"/g) || []).length !== 16) failures.push("video production overview directory is incomplete");
+if (!videoOverviewHtml.includes("Sixteen focused production capabilities") || (videoOverviewHtml.match(/class="production-card"/g) || []).length !== 16) failures.push("video production overview directory is incomplete");
+for (const group of ["campaigns","business","products","social"]) if (!videoOverviewHtml.includes(`id="video-${group}"`) || !videoOverviewHtml.includes(`href="#video-${group}"`)) failures.push(`video production overview: missing ${group} category navigation`);
+const servicesHtml = pages.get("/services/") || "";
+if (!servicesHtml.includes("Brand communications, video production &amp; creative services") || !servicesHtml.includes("class=\"service-index-grid\"") || !publicHomeHtml.includes('href="/services/">Services</a>')) failures.push("services overview: content or primary navigation is missing");
+for (const route of requiredRoutes) if (!pages.get(route)?.includes('property="og:title"') || !pages.get(route)?.includes('property="og:image"')) failures.push(`${route}: sharing metadata is missing`);
+if (!workHtml.includes('<img src="/media/case-recons.webp" alt="Recons Group industrial brand communication"')) failures.push("work: case-study cards need accessible project imagery");
 if ((filmsHtml.match(/data-video-id=/g) || []).length < 6) failures.push("video results: six verified film thumbnails are missing");
 if (filmsHtml.includes("iframe srcdoc=") || !filmsHtml.includes("scrolling','no")) failures.push("video results: no-scroll click-to-play player is missing");
 for (const route of requiredRoutes.filter(route => /^\/video-production\/(?!how-it-works|results)[^/]+\/$/.test(route))) {
@@ -123,6 +128,9 @@ for (const route of requiredRoutes.filter(route => /^\/video-production\/(?!how-
   if (!html.includes("India + global markets") || !html.includes("Mumbai-rooted production")) failures.push(`${route}: global production positioning is missing`);
   if (html.includes("iframe srcdoc=")) failures.push(`${route}: scrolling video thumbnail iframe remains`);
   if ((html.match(/class="archive-card"/g) || []).length < 2) failures.push(`${route}: production gallery needs multiple images`);
+}
+for (const [service,project] of [["digital-ad-films","bryan-candy"],["brand-films","shreeji-woodcraft"],["explainer-videos","recons-group"],["social-media-videos","bhoomi"]]) {
+  if (!pages.get(`/video-production/${service}/`)?.includes(`href="/work/${project}/"`)) failures.push(`video production ${service}: related documented project is missing`);
 }
 for (const route of requiredRoutes.filter(route => route.startsWith("/brand-creative/"))) {
   const html = pages.get(route) || "";
@@ -158,7 +166,11 @@ if (!publicMapText.includes("/brand-creative/logo-visual-identity/")) failures.p
 if (!publicMapText.includes("https://www.ambestbrandcom.com/seo/how-it-works/")) failures.push("public sitemap uses the wrong canonical host");
 const publicRobots = await (await request("/robots.txt", {}, {PUBLIC_SITE:"true"})).text();
 if (!publicRobots.includes("Sitemap: https://www.ambestbrandcom.com/sitemap.xml") || publicRobots.includes("Disallow: /\n")) failures.push("public robots.txt is not crawlable or uses the wrong sitemap host");
-const protectedQuote = await request("/get-a-quote/", {}, {PUBLIC_SITE:"true",TURNSTILE_SITE_KEY:"site-key",TURNSTILE_SECRET_KEY:"secret-key",EMAIL:{send:async()=>({messageId:"render-test"})}});
+const directQuote = await request("/get-a-quote/", {}, {PUBLIC_SITE:"true",TURNSTILE_SITE_KEY:"site-key",TURNSTILE_SECRET_KEY:"secret-key",EMAIL:{send:async()=>({messageId:"render-test"})}});
+const directQuoteHtml = await directQuote.text();
+if (!directQuoteHtml.includes('data-delivery-mode="email-app"') || !directQuoteHtml.includes('Prepare enquiry email') || !directQuoteHtml.includes('The website does not send or store your enquiry.') || directQuoteHtml.includes('class="cf-turnstile"')) failures.push("quote form: direct-email mode should be honest and should not require Turnstile");
+if (!directQuoteHtml.includes('Your enquiry has not been sent yet.') || !directQuoteHtml.includes('Open prepared email to sachin@ambestmedia.com')) failures.push("quote form: prepared email instructions are missing");
+const protectedQuote = await request("/get-a-quote/", {}, {PUBLIC_SITE:"true",TURNSTILE_SITE_KEY:"site-key",TURNSTILE_SECRET_KEY:"secret-key",EMAIL:{send:async()=>({messageId:"render-test"})},LEAD_DELIVERY_VERIFIED:"true"});
 const protectedQuoteHtml = await protectedQuote.text();
 if (!protectedQuoteHtml.includes('class="cf-turnstile"') || !protectedQuoteHtml.includes('data-action="quote-enquiry"') || !protectedQuoteHtml.includes("challenges.cloudflare.com/turnstile/v0/api.js")) failures.push("quote form: Turnstile widget is not rendered when configured");
 if (!protectedQuoteHtml.includes("sachin@ambestmedia.com") || protectedQuoteHtml.includes("sachin@ambestbrandcom.in")) failures.push("quote form: enquiry contact is not sachin@ambestmedia.com");
@@ -166,6 +178,7 @@ if (!protectedQuoteHtml.includes('placeholder="example.com"') || protectedQuoteH
 if (!protectedQuoteHtml.includes('id="country"') || !protectedQuoteHtml.includes('Select country / region') || !protectedQuoteHtml.includes('sachin@ambestmedia.com')) failures.push("quote form: country selector or delivery address is missing");
 if (protectedQuoteHtml.includes('<form id="quote-form" novalidate') || !protectedQuoteHtml.includes('quoteForm.reportValidity()') || !protectedQuoteHtml.includes('name="goal" minlength="5"') || !protectedQuoteHtml.includes('id="form-status" class="form-status" role="status" aria-live="polite" tabindex="-1"')) failures.push("quote form: accessible browser validation is not enabled");
 if (!protectedQuoteHtml.includes('Open this enquiry in your email app.') || !protectedQuoteHtml.includes('mailto:sachin@ambestmedia.com?subject=')) failures.push("quote form: prefilled email fallback is missing when delivery fails");
+if (protectedQuoteHtml.includes('data-delivery-mode="email-app"') || protectedQuoteHtml.includes('The website does not send or store your enquiry.')) failures.push("quote form: verified delivery should use the online flow");
 for (const removedField of ['company','budget','timing']) if (protectedQuoteHtml.includes(`id="${removedField}"`)) failures.push(`quote form: unnecessary ${removedField} field remains visible`);
 for (const route of ["corporate-communication-videos","micro-drama","testimonial-videos","explainer-videos","2d-animation","commercial-photography","video-podcasts","short-films"]) {
   const html = pages.get(`/video-production/${route}/`) || "";
@@ -197,21 +210,25 @@ const second = await duplicate.json();
 if (duplicate.status !== 202 || first.requestId !== second.requestId) failures.push("idempotent duplicate handling failed");
 const originalFetch = globalThis.fetch;
 let deliveredEmail;
+let deliveredWebhook;
 try {
-  globalThis.fetch = async input => {
+  globalThis.fetch = async (input, init) => {
     if (String(input).includes("challenges.cloudflare.com/turnstile/v0/siteverify")) return new Response(JSON.stringify({success:true,action:"quote-enquiry",hostname:"www.ambestbrandcom.com"}),{headers:{"content-type":"application/json"}});
+    if (String(input) === "https://leads.example.test/enquiry") { deliveredWebhook = {headers:init.headers,body:JSON.parse(init.body)}; return new Response("accepted",{status:200}); }
     throw new Error(`Unexpected external fetch in quote test: ${input}`);
   };
   const productionPayload = {...payload,email:"prospect@example.com",selection:"brand-communication-strategy",website:"example.com",idempotencyKey:"qa-email-0001","cf-turnstile-response":"valid-test-token"};
-  const emailed = await worker.fetch(new Request("https://www.ambestbrandcom.com/api/quote",{method:"POST",headers:{"content-type":"application/json"},body:JSON.stringify(productionPayload)}),{TURNSTILE_SECRET_KEY:"secret-key",EMAIL:{send:async message=>{deliveredEmail=message;return {messageId:"email-test"};}},LEAD_RECIPIENT:"sachin@ambestmedia.com",LEAD_SENDER:"website@ambestbrandcom.com"},{});
+  const emailed = await worker.fetch(new Request("https://www.ambestbrandcom.com/api/quote",{method:"POST",headers:{"content-type":"application/json"},body:JSON.stringify(productionPayload)}),{TURNSTILE_SECRET_KEY:"secret-key",EMAIL:{send:async message=>{deliveredEmail=message;return {messageId:"email-test"};}},LEAD_RECIPIENT:"sachin@ambestmedia.com",LEAD_SENDER:"website@ambestbrandcom.com",LEAD_DELIVERY_VERIFIED:"true"},{});
   if (emailed.status !== 202) failures.push(`configured production form: expected 202, got ${emailed.status}`);
   if (deliveredEmail?.to !== "sachin@ambestmedia.com" || deliveredEmail?.replyTo !== "prospect@example.com") failures.push("configured production form: email delivery fields are incorrect");
   if (!deliveredEmail?.text?.includes("Website: https://example.com/")) failures.push("configured production form: plain website domain was not normalized automatically");
   if (!deliveredEmail?.text?.includes("Country / region: India")) failures.push("configured production form: country was not included in the delivery email");
+  const webhookSent = await worker.fetch(new Request("https://www.ambestbrandcom.com/api/quote",{method:"POST",headers:{"content-type":"application/json"},body:JSON.stringify({...productionPayload,idempotencyKey:"qa-webhook-0001"})}),{TURNSTILE_SECRET_KEY:"secret-key",EMAIL:{send:async()=>{throw new Error("Email binding should not be used when a webhook is configured");}},LEAD_WEBHOOK_URL:"https://leads.example.test/enquiry",LEAD_WEBHOOK_TOKEN:"test-token",LEAD_DELIVERY_VERIFIED:"true"},{});
+  if (webhookSent.status !== 202 || deliveredWebhook?.body?.email !== "prospect@example.com" || deliveredWebhook?.headers?.authorization !== "Bearer test-token") failures.push("configured production form: approved webhook should take precedence over the unavailable Email binding");
   const originalConsoleError = console.error;
   try {
     console.error = () => {};
-    const failed = await worker.fetch(new Request("https://www.ambestbrandcom.com/api/quote",{method:"POST",headers:{"content-type":"application/json"},body:JSON.stringify({...productionPayload,idempotencyKey:"qa-email-provider-failure"})}),{TURNSTILE_SECRET_KEY:"secret-key",EMAIL:{send:async()=>{throw Object.assign(new Error("Sender domain is not onboarded"),{code:"E_SENDER_DOMAIN_NOT_AVAILABLE"});}}},{});
+    const failed = await worker.fetch(new Request("https://www.ambestbrandcom.com/api/quote",{method:"POST",headers:{"content-type":"application/json"},body:JSON.stringify({...productionPayload,idempotencyKey:"qa-email-provider-failure"})}),{TURNSTILE_SECRET_KEY:"secret-key",EMAIL:{send:async()=>{throw Object.assign(new Error("Sender domain is not onboarded"),{code:"E_SENDER_DOMAIN_NOT_AVAILABLE"});}},LEAD_DELIVERY_VERIFIED:"true"},{});
     const failureBody = await failed.json();
     if (failed.status !== 502 || failureBody.errorCode !== "E_SENDER_DOMAIN_NOT_AVAILABLE") failures.push("configured production form: provider rejection is not surfaced safely");
   } finally { console.error = originalConsoleError; }
@@ -220,6 +237,9 @@ try {
 }
 const blocked = await request("/api/quote", {method:"POST",headers:{"content-type":"application/json"},body:JSON.stringify({...payload,idempotencyKey:"qa-unconfigured"})}, {});
 if (blocked.status !== 503) failures.push(`unconfigured production form: expected 503, got ${blocked.status}`);
+let pausedEmailCalled = false;
+const paused = await request("/api/quote", {method:"POST",headers:{"content-type":"application/json"},body:JSON.stringify({...payload,idempotencyKey:"qa-paused","cf-turnstile-response":"test-token"})}, {TURNSTILE_SECRET_KEY:"secret-key",EMAIL:{send:async()=>{pausedEmailCalled=true;return {messageId:"unexpected"};}}});
+if (paused.status !== 503 || pausedEmailCalled || !(await paused.json()).message.includes("Online form delivery is paused")) failures.push("paused production form: failing Email binding must not be called");
 
 if (failures.length) {
   console.error(`Site checks failed (${failures.length})`);

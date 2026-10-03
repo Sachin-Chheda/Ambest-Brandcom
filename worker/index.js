@@ -18,7 +18,15 @@ const mainServices = [
   {id:"brand-experiences-partnerships",name:"Brand Experiences & Partnerships",summary:"Experience concepts and partner-led activation designed to make the brand tangible in real settings and communities.",fit:"For events, exhibitions, collaborations, creator programmes, dealer engagement and integrated launches.",includes:["Experience and activation concepts","Partnership roles, content and communication","Digital amplification and post-activation reuse"],links:[["Explore connected work","/work/"],["Discuss a tailored scope","/get-a-quote/"]]},
 ];
 
-const serviceRoutes = mainServices.map(service => `/services/${service.id}/`);
+const mainServiceSeo = {
+  "ad-films-video-content": {title:"Ad Films & Video Production Agency | Ambest Brandcom",description:"Ad films, brand films, corporate videos and social content from concept to production, post and channel-ready versions for Indian and global teams."},
+  "brand-communication-strategy": {title:"Brand Strategy & Communication Agency | Ambest Brandcom",description:"Clarify positioning, brand messaging and campaign direction with a connected communication strategy designed for teams, channels and markets."},
+  "creative-solutions": {title:"Creative Agency & Campaign Solutions | Ambest Brandcom",description:"Bring one creative idea to life across identity, campaigns, film, digital and sales communication—with practical assets built for real use."},
+  "digital-social": {title:"Digital & Social Marketing Agency | Ambest Brandcom",description:"Connect social media, content, search, paid campaigns and marketplaces around a clear customer journey and measurable business priorities."},
+  "website-development": {title:"Website Development & UX Design | Ambest Brandcom",description:"Plan, design and develop responsive websites with clear navigation, useful content, accessible journeys and search-ready technical foundations."},
+  "brand-experiences-partnerships": {title:"Brand Experiences & Event Activations | Ambest Brandcom",description:"Create connected brand experiences through exhibitions, events, partnerships and activations that extend beyond the moment itself."},
+};
+const serviceRoutes = ["/services/", ...mainServices.map(service => `/services/${service.id}/`)];
 const videoServiceRoutes = videoServices.map(service => `/video-production/${service.slug}/`);
 const brandCreativeRoutes = brandCreativeServices.map(service => `/brand-creative/${service.slug}/`);
 const defaultLeadRecipient = "sachin@ambestmedia.com";
@@ -93,6 +101,24 @@ const projectFilms = {
   "shreeji-woodcraft": {id:"kw48Puf-Xxg",poster:"video-shreeji.jpg",title:"Shreeji Woodcraft industrial brand film"},
   "bryan-candy": {id:"Ohj3Uh9IEjo",poster:"video-celebrity.jpg",title:"Bryan & Candy advertising film"},
 };
+const videoRelatedProjects = {
+  "digital-ad-films":"bryan-candy",
+  "brand-films":"shreeji-woodcraft",
+  "corporate-communication-videos":"recons-group",
+  "corporate-films":"shreeji-woodcraft",
+  "explainer-videos":"recons-group",
+  "product-videos":"recons-group",
+  "social-media-videos":"bhoomi",
+  "video-podcasts":"dr-amyn-rajani",
+};
+
+function relatedVideoProjectSection(slug) {
+  const projectSlug = videoRelatedProjects[slug];
+  const visual = projectVisuals[projectSlug];
+  if (!visual) return "";
+  const name = projects.find(project => project.slug === projectSlug)?.name || projectSlug;
+  return `<section class="section related-video-project"><div class="shell related-video-project-grid"><img src="/media/${e(visual.file)}" alt="${e(visual.alt)}" loading="lazy" decoding="async"><div><p class="eyebrow">Related project</p><h2>${e(name)}</h2><p class="lede">${e(visual.positioning)}</p><p>See how the moving-image or content need fits a wider brand and communication brief.</p><a class="button secondary" href="/work/${e(projectSlug)}/">Explore the case study</a></div></div></section>`;
+}
 
 function youtubeEmbed(id, title, suppliedPoster) {
   const poster = suppliedPoster || featuredFilms.find(film => film.id === id)?.poster || "video-showreel.jpg";
@@ -151,7 +177,14 @@ function filmGallery() {
 }
 
 function videoServiceDirectory() {
-  return `<section class="section production-directory"><div class="shell"><div class="section-head"><div class="section-kicker">Production services</div><div><h2>Choose the kind of story you need to tell.</h2><p class="lede">Sixteen focused production capabilities, each with its own process, example and deliverables. They can work independently or as part of a connected brand programme.</p></div></div><div class="production-grid">${videoServices.map(service => `<article class="production-card"><a class="production-card-media" href="/video-production/${service.slug}/"><img src="/media/${service.poster}" alt="" loading="lazy" decoding="async"><span>${e(service.eyebrow)}</span></a><div class="production-card-copy"><h3><a href="/video-production/${service.slug}/">${e(service.name)}</a></h3><p>${e(service.fit)}</p><a class="production-card-link" href="/video-production/${service.slug}/">Explore ${e(service.name)} →</a></div></article>`).join("")}</div></div></section>`;
+  const groups = [
+    {id:"campaigns",name:"Campaigns & brand stories",intro:"Advertising ideas, brand narratives and short-form stories designed for attention and meaning.",slugs:["digital-ad-films","brand-films","brand-anthem-videos","micro-drama","short-films"]},
+    {id:"business",name:"Business & people",intro:"Real people and credible company stories for customers, partners, employees and stakeholders.",slugs:["corporate-communication-videos","corporate-films","testimonial-videos","video-podcasts"]},
+    {id:"products",name:"Products & explanation",intro:"Formats that make a product, service or complex idea easier to see and understand.",slugs:["explainer-videos","2d-animation","product-videos","ai-video-production"]},
+    {id:"social",name:"Social & on-location",intro:"Platform-native content and visual capture for ongoing communication and real-world moments.",slugs:["social-media-videos","drone-videography","commercial-photography"]},
+  ];
+  const cards = slugs => slugs.map(slug => videoServices.find(service => service.slug === slug)).filter(Boolean).map(service => `<article class="production-card"><a class="production-card-media" href="/video-production/${service.slug}/"><img src="/media/${service.poster}" alt="" loading="lazy" decoding="async"><span>${e(service.eyebrow)}</span></a><div class="production-card-copy"><h3><a href="/video-production/${service.slug}/">${e(service.name)}</a></h3><p>${e(service.fit)}</p><a class="production-card-link" href="/video-production/${service.slug}/">Explore ${e(service.name)} →</a></div></article>`).join("");
+  return `<section class="section production-directory"><div class="shell"><div class="section-head"><div class="section-kicker">Production services</div><div><h2>Find the right format for the brief.</h2><p class="lede">Sixteen focused production capabilities, grouped by communication need. Each page explains the fit, deliverables and a relevant moving-image example.</p></div></div><nav class="directory-jumps" aria-label="Video service categories">${groups.map(group => `<a href="#video-${group.id}">${e(group.name)} <span aria-hidden="true">↗</span></a>`).join("")}</nav>${groups.map(group => `<div class="production-group" id="video-${group.id}"><div class="production-group-head"><h3>${e(group.name)}</h3><p>${e(group.intro)}</p></div><div class="production-grid">${cards(group.slugs)}</div></div>`).join("")}</div></section>`;
 }
 
 function relatedVideoServices(currentSlug) {
@@ -164,7 +197,10 @@ function videoServicePage(service, publicSite) {
   const path = `/video-production/${service.slug}/`;
   const serviceSchema = JSON.stringify({"@context":"https://schema.org","@type":"Service",name:service.name,description:service.description,provider:{"@type":"Organization",name:"Ambest Brandcom",url:origin},areaServed:["India","Global markets"],url:`${origin}${path}`}).replaceAll("<", "\\u003c");
   const body = `<nav class="shell breadcrumbs" aria-label="Breadcrumb"><ol><li><a href="/">Home</a></li><li><a href="/video-production/">Video Production</a></li><li>${e(service.name)}</li></ol></nav><section class="shell production-hero"><div class="production-hero-grid"><div><p class="eyebrow">${e(service.eyebrow)}</p><h1>${e(service.name)}</h1><p class="production-headline">${e(service.headline)}</p><p class="hero-copy">${e(service.intro)}</p><div class="actions"><a class="button signal" href="/get-a-quote/?service=ad-films-video-content">Discuss a production brief</a><a class="button secondary" href="/video-production/results/">Watch more work</a></div></div><figure class="production-visual"><img src="/media/${service.image}" alt="${e(service.imageAlt)}" loading="eager" decoding="async"><figcaption>Visual from Ambest’s published production archive.</figcaption></figure></div></section><section class="section production-example"><div class="shell media-split"><div><p class="eyebrow">Selected example</p><h2>See the format in motion.</h2><p class="lede">This film was embedded on the corresponding service page in Ambest’s published archive. It is presented here with a fixed, responsive thumbnail and opens without an internal scroll area.</p></div><div class="production-video">${youtubeEmbed(service.youtube, service.videoTitle, service.poster)}</div></div></section><section class="section"><div class="shell production-details"><div><p class="section-kicker">What the scope can include</p><h2>From a clear brief to adaptable final assets.</h2><p class="lede">${e(service.fit)}</p></div><div class="production-lists"><article><h3>Production deliverables</h3><ul>${service.deliverables.map(item => `<li>${e(item)}</li>`).join("")}</ul></article><article><h3>Common applications</h3><ul>${service.applications.map(item => `<li>${e(item)}</li>`).join("")}</ul></article></div></div></section><section class="section production-process"><div class="shell"><div class="section-head"><div class="section-kicker">Working process</div><div><h2>One disciplined path, adapted to the format.</h2><p class="lede">The exact production plan changes with the story, locations, talent, technology and markets. The decision gates remain clear.</p></div></div><div class="production-steps"><article><span>01</span><h3>Discover</h3><p>Define the audience, objective, use, markets, evidence and approvals.</p></article><article><span>02</span><h3>Design</h3><p>Shape the concept, script, visual treatment, storyboard and production plan.</p></article><article><span>03</span><h3>Produce</h3><p>Direct the agreed live-action, animation, interview, audio or image-making work.</p></article><article><span>04</span><h3>Finish &amp; adapt</h3><p>Edit, grade, mix, caption and deliver the required languages, lengths and formats.</p></article></div></div></section><section class="section global-band"><div class="shell content-grid"><div class="section-kicker">India + global markets</div><div class="prose"><h2>Mumbai-rooted production, structured for international collaboration.</h2><p>Ambest can work with regional marketing teams, India teams and global stakeholders through explicit briefs, review gates, rights, localization and handoffs. The result is one strategic story adapted thoughtfully for its audience and channel.</p><div class="actions"><a class="button signal" href="/get-a-quote/?service=ad-films-video-content">Get Custom Quote</a><a class="button hero-secondary" href="/about/">About Ambest</a></div></div></div></section>${relatedVideoServices(service.slug)}<section class="section"><div class="shell"><div class="quote-band"><p class="eyebrow">Start with the audience</p><h2>What should people understand, feel or do after watching?</h2><p>Share the business context, intended markets and available assets. Ambest will shape the right production approach around the brief.</p><a class="button" href="/get-a-quote/?service=ad-films-video-content">Discuss your project</a></div></div></section><script type="application/ld+json">${serviceSchema}</script>`;
-  const enrichedBody = body.replace('<section class="section"><div class="shell production-details">', `${imageGallery(videoServiceGalleries[service.slug], "Production imagery", "More than one frame of the story.", "Visual references from Ambest’s published production pages sit alongside the playable film above.")}<section class="section"><div class="shell production-details">`);
+  const enrichedBody = body
+    .replace("<h2>See the format in motion.</h2>", `<h2>${e(service.videoTitle)}</h2>`)
+    .replace("This film was embedded on the corresponding service page in Ambest’s published archive. It is presented here with a fixed, responsive thumbnail and opens without an internal scroll area.", "A selected example from Ambest’s published archive. Watch the visual approach, storytelling and production choices in context.")
+    .replace('<section class="section"><div class="shell production-details">', `${imageGallery(videoServiceGalleries[service.slug], "Production imagery", "More than one frame of the story.", "Selected visuals from Ambest’s production archive show the craft and range behind the format.")}${relatedVideoProjectSection(service.slug)}<section class="section"><div class="shell production-details">`);
   return rebrand(generatedPages["/"], path, publicSite)
     .replace(/<title>.*?<\/title>/, `<title>${e(service.title)}</title>`)
     .replace(/<meta name="description" content="[^"]*">/, `<meta name="description" content="${e(service.description)}">`)
@@ -190,7 +226,7 @@ function brandCreativePage(service, publicSite) {
 function applyProjectPosters(html) {
   for (const visual of Object.values(projectVisuals)) {
     const original = `<div class="case-poster" aria-hidden="true">${visual.label}</div>`;
-    const replacement = `<div class="case-poster media-poster" style="--poster:url('/media/${visual.file}')" aria-hidden="true"><span>${visual.label}</span></div>`;
+    const replacement = `<div class="case-poster media-poster"><img src="/media/${visual.file}" alt="${e(visual.alt)}" loading="lazy" decoding="async"><span aria-hidden="true">${visual.label}</span></div>`;
     html = html.replaceAll(original,replacement);
   }
   return html;
@@ -305,8 +341,11 @@ function enrichPage(html, path) {
     html = html
       .replace(/<title>.*?<\/title>/, "<title>Video Production Services for Global Brands | Ambest</title>")
       .replace(/<meta name="description" content="[^"]*">/, '<meta name="description" content="Explore 16 video production services for global and Indian brands—from ad films and corporate communication to animation, AI video, podcasts and social content.">')
+      .replace("Choose the film by what it must accomplish.", "Video production for brands, businesses and campaigns.")
+      .replace(/Ambest(?:&#39;|')s current production inventory spans ad and brand films, corporate communication, explainers, animation and recurring social video\. The useful first decision is not camera versus animation; it is the audience, message, intended use and action the work must support\./, "From ad films and brand stories to corporate communication, explainers, animation and social video, Ambest develops content around the audience, message and channel. Explore the formats below, watch selected examples and choose the approach that suits your brief.")
       .replace("Choose a production path by purpose and governance—not by a generic promise of more video.", "Choose the production format by the story, audience and channel—not by a generic promise of more video.")
       .replace("No autoplay wall. No invented showreel. Approved films and posters will be added after media permissions are confirmed.", "Sixteen focused production services. Verified archive visuals. Responsive, click-to-play films.")
+      .replace("Sixteen focused production services. Verified archive visuals. Responsive, click-to-play films.", "Ad films, corporate stories, explainers and social content—from a focused brief to useful final versions.")
       .replace(/<section class="section"><div class="shell"><div class="section-head"><div class="section-kicker">Choose by fit<\/div>[\s\S]*?<\/section>(?=<section class="section"><div class="shell content-grid"><div class="section-kicker">Objectives<\/div>)/, videoServiceDirectory());
   }
   if (path === "/digital-marketing/" || path.startsWith("/digital-marketing/") || path === "/seo/" || path.startsWith("/seo/")) {
@@ -338,7 +377,9 @@ h1 span{color:var(--brand-blue);background:linear-gradient(100deg,#ff5a00 0%,#97
 .button.signal,.quote-band{background:linear-gradient(110deg,#1900f5 0%,#140a72 40%,#972858 68%,#ff5a00 100%);border-color:transparent;color:#fff}
 .quote-band .button{color:#101827}.availability:before{background:linear-gradient(135deg,#1769ff,#ff4d1c)}
 .case-poster{background:linear-gradient(110deg,#ff5a00 0%,#972858 44%,#140a72 72%,#1900f5 100%);color:#fff}
-.case-poster.media-poster{min-height:205px;background-color:#f4f5fa;background-image:linear-gradient(0deg,rgba(20,10,114,.92) 0%,rgba(151,40,88,.5) 34%,rgba(255,90,0,.08) 70%),var(--poster);background-size:cover,contain;background-position:center;background-repeat:no-repeat;color:#fff}
+.case-poster.media-poster{position:relative;isolation:isolate;min-height:205px;background:#f4f5fa;color:#fff}
+.case-poster.media-poster img{position:absolute;inset:0;z-index:-2;display:block;width:100%;height:100%;object-fit:contain}
+.case-poster.media-poster:after{content:'';position:absolute;inset:0;z-index:-1;background:linear-gradient(0deg,rgba(20,10,114,.96) 0%,rgba(86,29,105,.58) 38%,rgba(255,90,0,.06) 100%)}
 .case-poster.media-poster span{max-width:88%;font-size:1.06rem;line-height:1.2;letter-spacing:.01em;text-shadow:0 1px 12px rgba(0,0,0,.35)}
 .case-study-hero{max-width:calc(var(--max) - 2.5rem);margin-top:1.5rem;margin-bottom:3rem;padding:clamp(2rem,5vw,4rem);border-radius:20px;background:linear-gradient(112deg,#1900f5 0%,#140a72 42%,#972858 70%,#ff5a00 100%);color:#fff;box-shadow:0 24px 60px rgba(20,10,114,.18)}.case-study-hero h1,.case-study-hero .hero-copy,.case-study-hero strong{color:#fff}.case-study-hero .eyebrow,.case-study-hero .fact small{color:#e7e5ff}.case-study-hero .eyebrow:before{background:#ff8a42}.case-study-hero .facts{border-color:rgba(255,255,255,.24);background:rgba(255,255,255,.24)}.case-study-hero .fact{background:rgba(16,24,39,.28);backdrop-filter:blur(8px)}
 .project-grid{gap:1rem;background:transparent;border:0}.case-card{overflow:hidden;border:1px solid var(--line);border-radius:14px}
@@ -349,10 +390,16 @@ h1 span{color:var(--brand-blue);background:linear-gradient(100deg,#ff5a00 0%,#97
 .main-service-card{grid-column:span 2;position:relative;overflow:hidden;background:#fff;padding:1.6rem;min-height:315px;display:flex;flex-direction:column}
 .main-service-card:before{content:'';position:absolute;inset:0 0 auto;height:5px;background:linear-gradient(90deg,#ff5a00,#972858 48%,#1900f5)}
 .main-service-card .number{color:var(--brand-blue);font-size:.78rem;font-weight:500}.main-service-card p{color:var(--muted)}.main-service-card a{margin-top:auto;font-weight:500}
+.services-index-hero h1{max-width:1080px}.services-index-hero .hero-copy{max-width:820px}.services-index-section{background:linear-gradient(145deg,#f8f9ff,#fff7f1)}.service-index-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:1.2rem}.service-index-card{display:grid;grid-template-columns:42% minmax(0,1fr);min-width:0;overflow:hidden;border:1px solid var(--line);border-radius:18px;background:#fff;box-shadow:0 15px 35px rgba(20,10,114,.06)}.service-index-image{display:block;min-width:0;background:#f4f5fa}.service-index-image img{display:block;width:100%;height:100%;min-height:310px;object-fit:contain}.service-index-copy{display:flex;flex-direction:column;padding:1.35rem}.service-index-copy .eyebrow{font-size:.7rem}.service-index-copy h2{margin:.3rem 0 .7rem;font-size:clamp(1.5rem,2vw,2.15rem)}.service-index-copy h2 a{text-decoration:none}.service-index-copy>p:not(.eyebrow){margin:.25rem 0 .75rem;color:var(--muted);font-size:.92rem}.service-index-copy .service-index-fit{color:var(--ink);font-size:.86rem}.service-index-copy .production-card-link{margin-top:auto}.services-index-paths{background:#fff}
+.directory-jumps{display:flex;flex-wrap:wrap;gap:.6rem;margin:0 0 2.3rem}.directory-jumps a{display:inline-flex;align-items:center;gap:.45rem;min-height:44px;padding:.6rem .85rem;border:1px solid #c6c8df;border-radius:999px;background:#fff;color:var(--brand-blue);font-size:.84rem;text-decoration:none}.directory-jumps a:hover,.directory-jumps a:focus-visible{border-color:var(--brand-blue);background:#eeefff}.directory-jumps span{color:var(--brand-orange)}.production-group{scroll-margin-top:105px;margin-top:2.8rem}.production-group+.production-group{padding-top:2.6rem;border-top:1px solid #d9dce9}.production-group-head{display:flex;justify-content:space-between;align-items:end;gap:2rem;margin-bottom:1rem}.production-group-head h3{margin:0;font-size:clamp(1.6rem,2.8vw,2.4rem)}.production-group-head p{max-width:540px;margin:0;color:var(--muted);font-size:.93rem}
+.related-video-project{background:#fff}.related-video-project-grid{display:grid;grid-template-columns:minmax(0,.82fr) minmax(0,1.18fr);gap:clamp(2rem,6vw,5rem);align-items:center}.related-video-project-grid img{display:block;width:100%;height:340px;object-fit:contain;border:1px solid var(--line);border-radius:18px;background:linear-gradient(140deg,#f4f5ff,#fff5ef)}.related-video-project-grid .button{margin-top:.6rem}
 .partner-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:1rem}.partner-point{border-left:4px solid #1900f5;padding-left:1.2rem}.partner-point:nth-child(2){border-color:#742a75}.partner-point:nth-child(3){border-color:#ff5a00}
 .production-directory{background:linear-gradient(145deg,#f8f9ff,#fff6f0)}.production-grid{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:1rem}.production-card{display:flex;min-width:0;flex-direction:column;overflow:hidden;border:1px solid var(--line);border-radius:16px;background:#fff}.production-card-media{position:relative;display:block;overflow:hidden;aspect-ratio:16/10;background:#101827}.production-card-media img{display:block;width:100%;height:100%;object-fit:cover}.production-card-media span{position:absolute;left:.75rem;bottom:.75rem;padding:.3rem .55rem;border-radius:99px;background:rgba(16,24,39,.84);color:#fff;font-size:.7rem;letter-spacing:.08em;text-transform:uppercase}.production-card-copy{display:flex;flex:1;flex-direction:column;padding:1rem}.production-card-copy h3{margin:.2rem 0 .65rem}.production-card-copy h3 a{text-decoration:none}.production-card-copy p{margin:0 0 1rem;color:var(--muted);font-size:.9rem}.production-card-link{margin-top:auto;font-size:.86rem;font-weight:500}.production-hero{padding-top:3rem;padding-bottom:5rem}.production-hero-grid{display:grid;grid-template-columns:minmax(0,1.02fr) minmax(380px,.98fr);gap:clamp(2rem,6vw,5rem);align-items:center}.production-hero h1{font-size:clamp(3rem,6.7vw,6.6rem)}.production-headline{max-width:780px;margin:1.5rem 0 0;color:var(--brand-blue);font-size:clamp(1.35rem,2.5vw,2.15rem);line-height:1.25}.production-visual{margin:0;overflow:hidden;border:1px solid var(--line);border-radius:20px;background:linear-gradient(145deg,#fff,#f2f3ff);box-shadow:0 24px 60px rgba(20,10,114,.14)}.production-visual img{display:block;width:100%;height:clamp(360px,41vw,560px);padding:1rem;object-fit:contain;object-position:center}.production-visual figcaption{padding:.75rem 1rem;border-top:1px solid var(--line);color:var(--muted);font-size:.78rem}.production-example{background:#11182a;color:#fff}.production-example .eyebrow,.production-example .lede{color:#d5d9e5}.production-video .video-frame{box-shadow:0 22px 60px rgba(0,0,0,.3)}.production-video .video-poster img{object-fit:contain}.production-details{display:grid;grid-template-columns:minmax(0,.9fr) minmax(440px,1.1fr);gap:clamp(2rem,6vw,5rem);align-items:start}.production-lists{display:grid;grid-template-columns:repeat(2,1fr);gap:1rem}.production-lists article{height:100%;padding:1.5rem;border:1px solid var(--line);border-radius:14px;background:#fff}.production-lists h3{margin-top:0}.production-lists ul{padding-left:1.15rem}.production-lists li{margin:.55rem 0}.production-process{background:#f1f3ff}.production-steps{display:grid;grid-template-columns:repeat(4,1fr);gap:1px;border:1px solid #d8daf0;background:#d8daf0}.production-steps article{padding:1.35rem;background:#fff}.production-steps span{color:var(--brand-orange);font-size:.78rem;font-weight:500}.production-steps h3{margin:.6rem 0}.production-steps p{margin:0;color:var(--muted)}.related-production-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:1rem}.related-production-grid a{display:flex;min-height:190px;flex-direction:column;padding:1.4rem;border:1px solid var(--line);border-radius:14px;background:#fff;text-decoration:none}.related-production-grid span{color:var(--brand-orange);font-size:.72rem;letter-spacing:.1em;text-transform:uppercase}.related-production-grid strong{margin:.55rem 0;font-size:1.35rem}.related-production-grid small{color:var(--muted);font-size:.9rem}.creative-directory{background:linear-gradient(145deg,#fff5ee,#f5f4ff)}.creative-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:1rem}.creative-card{display:grid;grid-template-columns:minmax(180px,.8fr) minmax(0,1.2fr);overflow:hidden;border:1px solid var(--line);border-radius:16px;background:#fff}.creative-card-media{display:block;min-height:280px;background:#f5f5fa}.creative-card-media img{display:block;width:100%;height:100%;object-fit:cover}.creative-card>div{align-self:center;padding:1.5rem}.creative-card h3{font-size:1.65rem}.creative-card h3 a{text-decoration:none}.creative-card p:not(.eyebrow){color:var(--muted)}.creative-hero .production-visual img{object-fit:contain}.growth-global{background:linear-gradient(135deg,#eef1ff,#fff5ee);border-top:1px solid #d8daf0}.growth-global .content-grid{border-left:5px solid transparent;border-image:linear-gradient(#1900f5,#ff5a00) 1}.growth-global .content-grid>*{padding-left:1.2rem}
 @media(max-width:920px){.main-service-grid{grid-template-columns:repeat(2,1fr)}.main-service-card{grid-column:auto}.partner-grid{grid-template-columns:1fr 1fr}.media-split,.project-visual-layout,.about-media-card,.production-hero-grid,.production-details{grid-template-columns:1fr}.film-grid,.production-grid{grid-template-columns:1fr 1fr}.production-steps{grid-template-columns:repeat(2,1fr)}.creative-card{grid-template-columns:1fr}.creative-card-media{min-height:220px}.about-media-card img{min-height:360px}.production-visual{max-width:700px}.production-visual img{height:min(72vw,520px)}}
 @media(max-width:620px){.home-video-hero{min-height:680px}.home-hero-video{object-position:58% center}.home-hero-scrim{background:linear-gradient(90deg,rgba(5,9,24,.9),rgba(13,12,52,.58)),linear-gradient(0deg,rgba(7,10,24,.7),transparent 55%)}.home-hero-content{padding-top:4.5rem;padding-bottom:4.5rem}.home-hero-services{font-size:.76rem;line-height:1.7}.main-service-grid,.partner-grid,.film-grid,.production-grid,.production-lists,.production-steps,.related-production-grid,.creative-grid{grid-template-columns:1fr}.media-split{grid-template-columns:1fr}.video-play{width:62px;height:62px}.video-play:after{border-left-width:17px;border-top-width:10px;border-bottom-width:10px}.video-label{font-size:.9rem}.service-image{min-height:290px}.service-image img{height:290px}.project-visual img{height:350px;min-height:0}.case-poster.media-poster{min-height:180px}.about-media-card img{min-height:300px}.production-hero{padding-top:2.2rem}.production-visual img{height:330px;padding:.6rem}}
+@media(max-width:1040px){.service-index-grid{grid-template-columns:1fr}}
+@media(max-width:760px){.related-video-project-grid{grid-template-columns:1fr}}
+@media(max-width:620px){.service-index-card{grid-template-columns:1fr}.service-index-image img{height:220px;min-height:0}.production-group-head{display:block}.production-group-head p{margin-top:.45rem}.directory-jumps a{font-size:.8rem}.related-video-project-grid img{height:250px}}
 @media(prefers-reduced-motion:reduce){.home-hero-video{display:none}.video-poster img{transition:none}}
 .archive-gallery{background:linear-gradient(145deg,#f7f8ff,#fff7f2)}.archive-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,270px),1fr));gap:1rem;align-items:start}.archive-grid-single{max-width:720px}.archive-card{min-width:0;margin:0;overflow:hidden;border:1px solid var(--line);border-radius:18px;background:#fff;box-shadow:0 14px 38px rgba(20,10,114,.07)}.archive-frame{position:relative;aspect-ratio:4/3;overflow:hidden;background:linear-gradient(140deg,#f3f4ff,#fff7f0)}.archive-frame img{position:absolute;inset:.8rem;display:block;width:calc(100% - 1.6rem);height:calc(100% - 1.6rem);object-fit:contain;object-position:center}.archive-card figcaption{padding:1rem 1.15rem;color:var(--muted);font-size:.9rem;line-height:1.45}.project-reel-section{background:#11182a;color:#fff}.project-reel-section .eyebrow,.project-reel-section .lede{color:#d8dcea}.project-reel-layout{display:grid;grid-template-columns:minmax(0,1fr) minmax(220px,320px);gap:clamp(2rem,7vw,6rem);align-items:center}.portrait-video{width:min(100%,320px);margin-inline:auto;overflow:hidden;border:1px solid #384153;border-radius:18px;background:#0b1120;box-shadow:0 22px 50px rgba(0,0,0,.25)}.portrait-video video{display:block;width:100%;aspect-ratio:9/16;object-fit:contain;background:#0b1120}
 @media(max-width:620px){.project-reel-layout{grid-template-columns:1fr}.portrait-video{max-width:280px}}
@@ -361,7 +408,7 @@ h1 span{color:var(--brand-blue);background:linear-gradient(100deg,#ff5a00 0%,#97
 function header() {
   const links = mainServices.map(service => `<a href="/services/${service.id}/"><strong>${e(service.name)}</strong><small>${e(service.summary)}</small></a>`).join("");
   const mobile = mainServices.map(service => `<a href="/services/${service.id}/">${e(service.name)}</a>`).join("");
-  return `<a class="skip" href="#main">Skip to content</a><header class="site-header"><div class="header-inner"><a class="brand" href="/" aria-label="Ambest Brandcom home"><img class="brand-logo" src="${headerLogo}" alt="Ambest Brandcom"></a><nav class="desktop-nav" aria-label="Primary"><a href="/">Home</a><a href="/about/">About</a><div class="nav-group"><a class="nav-parent" href="/services/ad-films-video-content/">Services</a><button class="nav-toggle" type="button" aria-label="Open Services menu" aria-expanded="false"></button><div class="nav-menu wide">${links}</div></div><a href="/work/">Work</a><a href="/blog/">Insights</a></nav><a class="button header-cta" href="/get-a-quote/">Get Custom Quote</a><button class="mobile-toggle" type="button" aria-expanded="false" aria-controls="mobile-menu">Menu</button><nav id="mobile-menu" class="mobile-panel" aria-label="Mobile primary"><a href="/">Home</a><a href="/about/">About</a><details><summary>Services</summary>${mobile}</details><a href="/work/">Work</a><a href="/blog/">Insights</a><a href="/get-a-quote/">Get Custom Quote</a></nav></div></header>`;
+  return `<a class="skip" href="#main">Skip to content</a><header class="site-header"><div class="header-inner"><a class="brand" href="/" aria-label="Ambest Brandcom home"><img class="brand-logo" src="${headerLogo}" alt="Ambest Brandcom"></a><nav class="desktop-nav" aria-label="Primary"><a href="/">Home</a><a href="/about/">About</a><div class="nav-group"><a class="nav-parent" href="/services/">Services</a><button class="nav-toggle" type="button" aria-label="Open Services menu" aria-expanded="false"></button><div class="nav-menu wide"><a href="/services/"><strong>All services</strong><small>Find the right starting point for your brief.</small></a>${links}</div></div><a href="/work/">Work</a><a href="/blog/">Insights</a></nav><a class="button header-cta" href="/get-a-quote/">Get Custom Quote</a><button class="mobile-toggle" type="button" aria-expanded="false" aria-controls="mobile-menu">Menu</button><nav id="mobile-menu" class="mobile-panel" aria-label="Mobile primary"><a href="/">Home</a><a href="/about/">About</a><details><summary>Services</summary><a href="/services/">All services</a>${mobile}</details><a href="/work/">Work</a><a href="/blog/">Insights</a><a href="/get-a-quote/">Get Custom Quote</a></nav></div></header>`;
 }
 
 function footer(publicSite) {
@@ -388,6 +435,7 @@ function reworkHome(html) {
     .replace("One company · three specialist divisions", "One partner · six connected services")
     .replace("Search discovery. Visual communication. Measurable execution.", "Strategy. Creativity. Content. Experiences. Growth.")
     .replace("The right scope follows the business situation—not an automatic bundle of every channel.", "A senior, integrated partner for teams that need consistency across markets, formats and collaborators.")
+    .replace("Selected work is presented through verified project scope and qualitative outcomes.", "Explore how strategy, film, design and digital work connect in real client projects.")
     .replace("its current contact footprint extends to Singapore and Canada.", "its international touchpoints include Singapore, Canada and the US.")
     .replace("Published contacts in Singapore and Canada support conversations beyond India; their current operating status remains subject to confirmation.", "Published contacts in Singapore, Canada and the US support collaboration beyond India and across international markets.")
     .replace("View our international contacts", "Connect with Ambest")
@@ -418,11 +466,26 @@ function rebrand(html, path, publicSite) {
   html = enrichPage(html,path);
   if (publicSite) {
     html = html
-      .replace("The preview uses qualitative outcomes while reported figures await definition, period and approval checks.", "Selected work is presented through verified project scope and qualitative outcomes.")
+      .replace("The preview uses qualitative outcomes while reported figures await definition, period and approval checks.", "Explore how strategy, film, design and digital work connect in real client projects.")
       .replace("Published contacts in Singapore and Canada support conversations beyond India; their current operating status remains subject to confirmation.", "Published contacts in Singapore, Canada and the US support collaboration beyond India and across international markets.");
     if (!["/privacy-policy/","/disclaimer/","/thank-you/"].includes(path)) html = html.replace('<meta name="robots" content="noindex,nofollow">','<meta name="robots" content="index,follow">');
   }
   return html;
+}
+
+function serviceIndexPage(publicSite) {
+  const path = "/services/";
+  const cards = mainServices.map(service => {
+    const media = serviceMedia[service.id];
+    const image = media?.type === "video" ? "video-showreel.jpg" : media?.file;
+    return `<article class="service-index-card"><a class="service-index-image" href="/services/${service.id}/" aria-label="Explore ${e(service.name)}"><img src="/media/${e(image)}" alt="" loading="lazy" decoding="async"></a><div class="service-index-copy"><p class="eyebrow">${e(service.id.replaceAll("-"," "))}</p><h2><a href="/services/${service.id}/">${e(service.name)}</a></h2><p>${e(service.summary)}</p><p class="service-index-fit">${e(service.fit)}</p><a class="production-card-link" href="/services/${service.id}/">Explore this service →</a></div></article>`;
+  }).join("");
+  const body = `<nav class="shell breadcrumbs" aria-label="Breadcrumb"><ol><li><a href="/">Home</a></li><li>Services</li></ol></nav><section class="shell subhero services-index-hero"><p class="eyebrow">What we do</p><h1>Brand communications, video production &amp; creative services.</h1><p class="hero-copy">Ambest connects strategy, film, creative, digital, websites and experiences around the same audience and business goal. Start with the capability you need; add others only when the brief calls for them.</p><div class="actions"><a class="button signal" href="/get-a-quote/">Discuss your brief</a><a class="button secondary" href="/work/">Explore case studies</a></div></section><section class="section services-index-section"><div class="shell"><div class="section-head"><div class="section-kicker">Find a starting point</div><div><h2>Six services. A clearer way to choose.</h2><p class="lede">Each service page explains where it fits, what the work can include and how it connects to relevant projects.</p></div></div><div class="service-index-grid">${cards}</div></div></section><section class="section services-index-paths"><div class="shell"><div class="section-head"><div class="section-kicker">Explore deeper</div><div><h2>Looking for a specific production or digital capability?</h2><p class="lede">Use the specialist directories to compare formats and find the right evidence for your brief.</p></div></div><div class="partner-grid"><article class="partner-point"><h3>Film &amp; content</h3><p>Compare ad films, corporate videos, animation, product stories and social formats.</p><a href="/video-production/">Explore video production →</a></article><article class="partner-point"><h3>Brand &amp; creative</h3><p>Explore identity, brand strategy, internal communication and live experiences.</p><a href="/brand-creative/brand-strategy-management/">Explore brand &amp; creative →</a></article><article class="partner-point"><h3>Digital &amp; web</h3><p>Connect social, search, paid activity, content and website development.</p><a href="/digital-marketing/">Explore digital growth →</a></article></div></div></section><section class="section"><div class="shell"><div class="quote-band"><p class="eyebrow">One brief, a focused scope</p><h2>Tell us the communication problem first.</h2><p>Share your audience, markets, existing assets and the decision you need people to make. We will recommend a practical starting point.</p><a class="button" href="/get-a-quote/">Get Custom Quote</a></div></div></section>`;
+  return rebrand(generatedPages["/"], path, publicSite)
+    .replace(/<title>.*?<\/title>/, "<title>Brand, Creative & Video Production Services | Ambest Brandcom</title>")
+    .replace(/<meta name="description" content="[^"]*">/, '<meta name="description" content="Explore Ambest Brandcom services across brand strategy, creative campaigns, ad films, video production, digital, social, websites and brand experiences.">')
+    .replace(/<link rel="canonical" href="[^"]*">/, `<link rel="canonical" href="${origin}${path}">`)
+    .replace(/<main id="main">[\s\S]*?<\/main>/, `<main id="main">${body}</main>`);
 }
 
 function servicePage(service, publicSite) {
@@ -431,8 +494,8 @@ function servicePage(service, publicSite) {
   const body = `<nav class="shell breadcrumbs" aria-label="Breadcrumb"><ol><li><a href="/">Home</a></li><li>Services</li><li>${e(service.name)}</li></ol></nav><section class="shell subhero"><div class="subhero-grid"><div><p class="eyebrow">Main service</p><h1>${e(service.name)}</h1><p class="hero-copy">${e(service.summary)}</p><div class="actions"><a class="button" href="/get-a-quote/?service=${service.id}">Discuss this service</a><a class="button secondary" href="/work/">View our work</a></div></div><aside class="subhero-note">${e(service.fit)}</aside></div></section>${serviceMediaSection(service)}${specialistDirectory}<section class="section"><div class="shell content-grid"><div class="section-kicker">What it can include</div><div class="prose"><h2>A connected scope, defined around the brief.</h2><ul>${service.includes.map(item => `<li>${e(item)}</li>`).join("")}</ul><p>The final scope names audiences, markets, outputs, responsibilities, review gates and measures. Capabilities can be commissioned independently or connected when the business problem genuinely requires it.</p></div></div></section><section class="section global-band"><div class="shell content-grid"><div class="section-kicker">Global collaboration</div><div class="prose"><h2>Consistent enough to travel. Relevant enough to work locally.</h2><p>For international teams, Ambest can translate a central brief into market-ready communication while keeping factual approvals, brand rules, rights, stakeholders and handoffs explicit. The work is structured for collaboration across India and global markets.</p><div class="actions">${service.links.map(([label,href],index) => `<a class="button ${index===0?'signal':''}" href="${href}">${e(label)}</a>`).join("")}</div></div></div></section><section class="section"><div class="shell"><div class="quote-band"><p class="eyebrow">Start with the brief</p><h2>Tell us what the audience must understand, feel or do.</h2><p>We will shape the service mix after understanding the objective, context, market and constraints.</p><a class="button" href="/get-a-quote/?service=${service.id}">Get Custom Quote</a></div></div></section>`;
   const enrichedBody = body.replace('<section class="section"><div class="shell content-grid">', `${imageGallery(mainServiceGalleries[service.id], "Selected applications", "See the service across real formats.", "A curated selection from Ambest’s published service and project archive shows how the discipline can take shape.")}<section class="section"><div class="shell content-grid">`);
   let html = rebrand(generatedPages["/"], path, publicSite)
-    .replace(/<title>.*?<\/title>/, `<title>${e(service.name)} | Ambest Brandcom</title>`)
-    .replace(/<meta name="description" content="[^"]*">/, `<meta name="description" content="${e(service.summary)}">`)
+    .replace(/<title>.*?<\/title>/, `<title>${e(mainServiceSeo[service.id].title)}</title>`)
+    .replace(/<meta name="description" content="[^"]*">/, `<meta name="description" content="${e(mainServiceSeo[service.id].description)}">`)
     .replace(/<link rel="canonical" href="[^"]*">/, `<link rel="canonical" href="${origin}${path}">`)
     .replace(/<main id="main">[\s\S]*?<\/main>/, `<main id="main">${enrichedBody}</main>`);
   return html;
@@ -451,12 +514,23 @@ quoteForm?.addEventListener('submit',async event=>{
       const candidate=/^https?:\\/\\//i.test(data.website)?data.website:'https://'+data.website;
       const parsed=new URL(candidate);
       if(!['http:','https:'].includes(parsed.protocol)||!parsed.hostname.includes('.'))throw new Error();
+      data.website=parsed.toString();
     }catch{
       website.setCustomValidity('Enter a website like example.com, or leave this optional field blank.');
       website.reportValidity();
       website.addEventListener('input',()=>website.setCustomValidity(''),{once:true});
       return;
     }
+  }
+  const subject='Ambest website enquiry — '+(data.name||'New enquiry');
+  const service=quoteForm.elements.namedItem('selection')?.selectedOptions?.[0]?.textContent||data.selection;
+  const body=[['Name',data.name],['Email',data.email],['Phone',data.phone],['Country / region',data.country],['Website',data.website],['Service',service],['Message',data.goal]].filter(([,value])=>value).map(([label,value])=>label+': '+value).join('\\n\\n');
+  const emailHref='mailto:sachin@ambestmedia.com?subject='+encodeURIComponent(subject)+'&body='+encodeURIComponent(body);
+  if(quoteForm.dataset.deliveryMode==='email-app'){
+    status.hidden=false;status.dataset.state='notice';
+    status.textContent='Your enquiry has not been sent yet. Open the prepared message in your email app and press Send there. ';
+    const emailLink=document.createElement('a');emailLink.href=emailHref;emailLink.textContent='Open prepared email to sachin@ambestmedia.com';status.append(emailLink);
+    status.focus();return;
   }
   if(quoteForm.querySelector('.cf-turnstile')&&!data['cf-turnstile-response']){
     status.hidden=false;status.dataset.state='error';
@@ -475,18 +549,21 @@ quoteForm?.addEventListener('submit',async event=>{
   }catch(error){
     const message=error?.message||'The enquiry could not be sent.';
     status.dataset.state='error';status.textContent=message+(message.includes('sachin@ambestmedia.com')?'':' You can also email sachin@ambestmedia.com.');
-    const subject='Ambest website enquiry — '+(data.name||'New enquiry');
-    const body=[['Name',data.name],['Email',data.email],['Phone',data.phone],['Country / region',data.country],['Website',data.website],['Service',data.selection],['Message',data.goal]].filter(([,value])=>value).map(([label,value])=>label+': '+value).join('\\n\\n');
-    const fallback=document.createElement('a');fallback.href='mailto:sachin@ambestmedia.com?subject='+encodeURIComponent(subject)+'&body='+encodeURIComponent(body);fallback.textContent=' Open this enquiry in your email app.';status.append(fallback);
+    const fallback=document.createElement('a');fallback.href=emailHref;fallback.textContent=' Open this enquiry in your email app.';status.append(fallback);
     globalThis.turnstile?.reset();
   }finally{submit.disabled=false;status.focus()}
 });`;
 
 function quotePage(html, url, env, publicSite) {
+  const deliveryVerified = env.LEAD_DELIVERY_VERIFIED === "true" && Boolean(env.EMAIL?.send || env.LEAD_WEBHOOK_URL) && Boolean(env.TURNSTILE_SITE_KEY && env.TURNSTILE_SECRET_KEY);
   const selected = url.searchParams.get("service") || "";
   const options = mainServices.map(service => `<option value="${service.id}" ${selected===service.id?'selected':''}>${e(service.name)}</option>`).join("");
   const countryOptions = countryNames.map(country => `<option value="${e(country)}">${e(country)}</option>`).join("");
-  const simpleForm = `<form id="quote-form"><div class="form-grid"><div class="field"><label for="name">Name</label><input id="name" name="name" autocomplete="name" maxlength="100" required></div><div class="field"><label for="email">Email</label><input id="email" name="email" type="email" autocomplete="email" maxlength="254" required></div><div class="field"><label for="phone">Phone <small>(optional)</small></label><input id="phone" name="phone" type="tel" autocomplete="tel" maxlength="40"></div><div class="field"><label for="country">Country / region</label><select id="country" name="country" autocomplete="country-name" required><option value="" selected disabled>Select country / region</option>${countryOptions}</select></div><div class="field full"><label for="website">Website <small>(optional)</small></label><input id="website" name="website" type="text" inputmode="url" autocomplete="url" maxlength="500" placeholder="example.com"></div><div class="field full"><label for="selection">How can we help?</label><select id="selection" name="selection" required><option value="not-sure" ${selected?'':'selected'}>Not sure yet</option>${options}</select></div><div class="field full"><label for="goal">Your message</label><textarea id="goal" name="goal" minlength="5" maxlength="3000" placeholder="Tell us briefly what you would like to create or improve." required></textarea></div><div class="honeypot" aria-hidden="true"><label for="website_confirm">Leave this field blank</label><input id="website_confirm" name="website_confirm" tabindex="-1" autocomplete="off"></div><div class="field full"><button class="button" type="submit">Send enquiry</button><p class="no-js-note">Your complete enquiry will be sent to ${defaultLeadRecipient}. We will use these details only to respond. See the <a href="/privacy-policy/">privacy notice</a>.</p><noscript><p>Please email <a href="mailto:${defaultLeadRecipient}">${defaultLeadRecipient}</a>; the online form requires JavaScript.</p></noscript></div></div></form>`;
+  let simpleForm = `<form id="quote-form"><div class="form-grid"><div class="field"><label for="name">Name</label><input id="name" name="name" autocomplete="name" maxlength="100" required></div><div class="field"><label for="email">Email</label><input id="email" name="email" type="email" autocomplete="email" maxlength="254" required></div><div class="field"><label for="phone">Phone <small>(optional)</small></label><input id="phone" name="phone" type="tel" autocomplete="tel" maxlength="40"></div><div class="field"><label for="country">Country / region</label><select id="country" name="country" autocomplete="country-name" required><option value="" selected disabled>Select country / region</option>${countryOptions}</select></div><div class="field full"><label for="website">Website <small>(optional)</small></label><input id="website" name="website" type="text" inputmode="url" autocomplete="url" maxlength="500" placeholder="example.com"></div><div class="field full"><label for="selection">How can we help?</label><select id="selection" name="selection" required><option value="not-sure" ${selected?'':'selected'}>Not sure yet</option>${options}</select></div><div class="field full"><label for="goal">Your message</label><textarea id="goal" name="goal" minlength="5" maxlength="3000" placeholder="Tell us briefly what you would like to create or improve." required></textarea></div><div class="honeypot" aria-hidden="true"><label for="website_confirm">Leave this field blank</label><input id="website_confirm" name="website_confirm" tabindex="-1" autocomplete="off"></div><div class="field full"><button class="button" type="submit">Send enquiry</button><p class="no-js-note">Enquiries are addressed to ${defaultLeadRecipient}. Please wait for a confirmation reference before counting an online enquiry as received. See the <a href="/privacy-policy/">privacy notice</a>.</p><noscript><p>Please email <a href="mailto:${defaultLeadRecipient}">${defaultLeadRecipient}</a>; the online form requires JavaScript.</p></noscript></div></div></form>`;
+  if (!deliveryVerified) simpleForm = simpleForm
+    .replace('<form id="quote-form">', '<form id="quote-form" data-delivery-mode="email-app">')
+    .replace('>Send enquiry</button>', '>Prepare enquiry email</button>')
+    .replace(/<p class="no-js-note">[\s\S]*?<\/p>/, `<p class="no-js-note">This prepares a message to ${defaultLeadRecipient}; it is <em>not sent by the website</em>. You must open it and press Send in your email app. See the <a href="/privacy-policy/">privacy notice</a>.</p>`);
   html = rebrand(html, "/get-a-quote/", publicSite)
     .replace(/<form id="quote-form"[\s\S]*?<\/form>/, simpleForm)
     .replace(/const quoteForm=document.querySelector\('#quote-form'\);[\s\S]*?(?=<\/script>)/, quoteClientScript)
@@ -494,17 +571,17 @@ function quotePage(html, url, env, publicSite) {
     .replace("Describe the goal without writing the entire brief.", "Tell us how we can help.")
     .replace('Name the business or project, the change you want, what already exists and the timing if known. Budget and phone are optional; "Not sure yet" is an acceptable answer.', "Share the essentials and we will take it from there. You can enter a website as example.com—we add https:// automatically.")
     .replace("A submission is only confirmed after the server-side delivery destination accepts it.", `Enquiries are addressed to ${defaultLeadRecipient}. We confirm submission only after the email service accepts it.`);
-  const deliveryReady = Boolean(env.EMAIL?.send || env.LEAD_WEBHOOK_URL);
-  if (env.TURNSTILE_SITE_KEY) {
+  if (deliveryVerified) {
     const widget = `<div class="field full turnstile-field"><div class="cf-turnstile" data-sitekey="${e(env.TURNSTILE_SITE_KEY)}" data-action="quote-enquiry" data-theme="light"></div><small>This verification helps prevent automated spam.</small></div>`;
     html = html
       .replace('<div class="field full"><button class="button" type="submit">Send enquiry</button>', `${widget}<div class="field full"><button class="button" type="submit">Send enquiry</button>`)
       .replace("</body>", '<script src="https://challenges.cloudflare.com/turnstile/v0/api.js" async defer></script></body>');
   }
-  if (env.TURNSTILE_SITE_KEY && env.TURNSTILE_SECRET_KEY && deliveryReady) {
+  if (deliveryVerified) {
     html = html.replace(/<p class="status-banner">[\s\S]*?<\/p>/, "");
   } else {
-    html = html.replace(/<p class="status-banner">[\s\S]*?<\/p>/, `<p class="status-banner">Secure online delivery is being configured. You can email <a href="mailto:${defaultLeadRecipient}">${defaultLeadRecipient}</a> in the meantime.</p>`);
+    html = html.replace(/<p class="status-banner">[\s\S]*?<\/p>/, `<p class="status-banner">Direct email is available now. Fill in the short form to prepare a message to <a href="mailto:${defaultLeadRecipient}">${defaultLeadRecipient}</a>, then send it from your email app. The website does not send or store your enquiry.</p>`)
+      .replace(`Enquiries are addressed to ${defaultLeadRecipient}. We confirm submission only after the email service accepts it.`, `Your details are prepared for an email to ${defaultLeadRecipient}; the enquiry is complete only after you press Send in your email app.`);
   }
   return html;
 }
@@ -529,6 +606,7 @@ async function handleQuote(request, env) {
   if (clean.website) { try { const candidate=/^https?:\/\//i.test(clean.website)?clean.website:`https://${clean.website}`; const parsed=new URL(candidate); if (!["http:","https:"].includes(parsed.protocol) || !parsed.hostname.includes(".")) throw new Error(); clean.website=parsed.toString(); } catch { return json({message:"Enter a valid website, such as example.com."},422); } }
   if (clean.idempotencyKey && acceptedIds.has(clean.idempotencyKey)) return json({requestId:acceptedIds.get(clean.idempotencyKey),message:"Your enquiry has already been received."},202);
   if (env.DEVELOPMENT_MODE !== "true") {
+    if (env.LEAD_DELIVERY_VERIFIED !== "true") return json({message:`Online form delivery is paused. Please email ${defaultLeadRecipient} directly.`},503);
     if (!env.TURNSTILE_SECRET_KEY || (!env.EMAIL?.send && !env.LEAD_WEBHOOK_URL)) return json({message:"Secure enquiry delivery is not configured yet."},503);
     if (!clean["cf-turnstile-response"]) return json({message:"Complete the anti-spam check and try again."},422);
     let result;
@@ -544,7 +622,7 @@ async function handleQuote(request, env) {
   const requestId = crypto.randomUUID();
   const record = {requestId,receivedAt:new Date().toISOString(),name:clean.name,email:clean.email,company:clean.company||null,phone:clean.phone||null,selection:clean.selection,goal:clean.goal,website:clean.website||null,country:clean.country||null,budget:clean.budget||null,timing:clean.timing||null};
   if (env.DEVELOPMENT_MODE !== "true") {
-    if (env.EMAIL?.send) {
+    if (!env.LEAD_WEBHOOK_URL && env.EMAIL?.send) {
       const recipient = env.LEAD_RECIPIENT || defaultLeadRecipient;
       const sender = env.LEAD_SENDER || defaultLeadSender;
       const rows = [["Reference",requestId],["Received",record.receivedAt],["Name",clean.name],["Email",clean.email],["Company",clean.company],["Phone",clean.phone],["Country / region",clean.country],["Service",clean.selection],["Website",clean.website],["Budget",clean.budget],["Timing",clean.timing],["Project goal",clean.goal]];
@@ -607,6 +685,16 @@ function missingPage(path) {
   return rebrand(generatedPages["/"],path,false).replace(/<title>.*?<\/title>/,"<title>Page not found | Ambest Brandcom</title>").replace(/<meta name="description" content="[^"]*">/,'<meta name="description" content="The requested page could not be found.">').replace(/<link rel="canonical" href="[^"]*">/,`<link rel="canonical" href="${origin}${path}">`).replace(/<main id="main">[\s\S]*?<\/main>/,`<main id="main">${body}</main>`);
 }
 
+function addSharingMetadata(html, path) {
+  const title = html.match(/<title>(.*?)<\/title>/)?.[1] || "Ambest Brandcom";
+  const description = html.match(/<meta name="description" content="([^"]*)">/)?.[1] || "";
+  const image = projectVisuals[path.match(/^\/work\/([^/]+)\/$/)?.[1]]?.file
+    || videoServices.find(service => path === `/video-production/${service.slug}/`)?.poster
+    || "video-showreel.jpg";
+  const tags = `<meta property="og:type" content="${path.startsWith("/work/") || path.startsWith("/blog/") ? "article" : "website"}"><meta property="og:site_name" content="Ambest Brandcom"><meta property="og:title" content="${title}"><meta property="og:description" content="${description}"><meta property="og:url" content="${origin}${e(path)}"><meta property="og:image" content="${origin}/media/${e(image)}"><meta name="twitter:card" content="summary_large_image">`;
+  return html.replace("</head>", `${tags}</head>`);
+}
+
 export default {
   async fetch(request, env={}) {
     const url = new URL(request.url);
@@ -644,8 +732,8 @@ export default {
     const service = mainServices.find(item => path === `/services/${item.id}/`);
     const videoService = videoServices.find(item => path === `/video-production/${item.slug}/`);
     const brandCreativeService = brandCreativeServices.find(item => path === `/brand-creative/${item.slug}/`);
-    let html = videoService ? videoServicePage(videoService,publicSite) : brandCreativeService ? brandCreativePage(brandCreativeService,publicSite) : service ? servicePage(service,publicSite) : generatedPages[path] ? (path==="/get-a-quote/" ? quotePage(generatedPages[path],url,env,publicSite) : rebrand(generatedPages[path],path,publicSite)) : null;
-    if (html) return new Response(request.method==="HEAD"?null:html,{headers:htmlHeaders});
+    let html = videoService ? videoServicePage(videoService,publicSite) : brandCreativeService ? brandCreativePage(brandCreativeService,publicSite) : service ? servicePage(service,publicSite) : path === "/services/" ? serviceIndexPage(publicSite) : generatedPages[path] ? (path==="/get-a-quote/" ? quotePage(generatedPages[path],url,env,publicSite) : rebrand(generatedPages[path],path,publicSite)) : null;
+    if (html) return new Response(request.method==="HEAD"?null:addSharingMetadata(html,path),{headers:htmlHeaders});
     return new Response(request.method==="HEAD"?null:missingPage(path),{status:404,headers:{...htmlHeaders,"x-robots-tag":"noindex"}});
   }
 };
