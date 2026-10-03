@@ -54,7 +54,7 @@ The site should lead with business clarity and connected execution. Video produc
 - Existing SEO and Digital Marketing pages receive a common global-digital-growth positioning section.
 - The Work hub and ten canonical case studies are positioned as integrated service proof.
 - Legacy service and nested benefit URLs redirect to the most relevant canonical `.com` page.
-- The enquiry form captures country/region and addresses the complete enquiry to `sachin@ambestmedia.com`. Automatic delivery remains pending a configured sender domain or another approved email provider; the current form offers a prefilled email fallback after delivery errors.
+- The enquiry form captures country/region and prepares a complete email to `sachin@ambestmedia.com` for the visitor to send from their own email app. It does not claim automatic delivery. Server-side delivery remains paused until a configured sender domain or another approved email provider is verified.
 
 ## Next content-production requirements
 

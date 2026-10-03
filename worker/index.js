@@ -436,8 +436,8 @@ function reworkHome(html) {
     .replace("Search discovery. Visual communication. Measurable execution.", "Strategy. Creativity. Content. Experiences. Growth.")
     .replace("The right scope follows the business situation—not an automatic bundle of every channel.", "A senior, integrated partner for teams that need consistency across markets, formats and collaborators.")
     .replace("Selected work is presented through verified project scope and qualitative outcomes.", "Explore how strategy, film, design and digital work connect in real client projects.")
-    .replace("its current contact footprint extends to Singapore and Canada.", "its international touchpoints include Singapore, Canada and the US.")
-    .replace("Published contacts in Singapore and Canada support conversations beyond India; their current operating status remains subject to confirmation.", "Published contacts in Singapore, Canada and the US support collaboration beyond India and across international markets.")
+    .replace("its current contact footprint extends to Singapore and Canada.", "its published contact footprint extends to Singapore and Canada, with collaboration open to US-based teams.")
+    .replace("Published contacts in Singapore and Canada support conversations beyond India; their current operating status remains subject to confirmation.", "Published contacts in Singapore and Canada support cross-border collaboration, including with US teams. A US office is not implied.")
     .replace("View our international contacts", "Connect with Ambest")
     .replace('<section class="section global-band">', `${showreelSection()}<section class="section global-band">`)
     .replace(/<section class="section"><div class="shell"><div class="section-head"><div class="section-kicker">Choose a path<\/div>[\s\S]*?<\/section>/, `${serviceCards()}${globalPartnerSection()}`)
@@ -467,7 +467,15 @@ function rebrand(html, path, publicSite) {
   if (publicSite) {
     html = html
       .replace("The preview uses qualitative outcomes while reported figures await definition, period and approval checks.", "Explore how strategy, film, design and digital work connect in real client projects.")
-      .replace("Published contacts in Singapore and Canada support conversations beyond India; their current operating status remains subject to confirmation.", "Published contacts in Singapore, Canada and the US support collaboration beyond India and across international markets.");
+      .replace("Published contacts in Singapore and Canada support conversations beyond India; their current operating status remains subject to confirmation.", "Published contacts in Singapore and Canada support cross-border collaboration, including with US teams. A US office is not implied.");
+    if (path === "/about/") html = html
+      .replace("the review build does not present it as approved project media or proof of owned facilities.", "the website does not present it as proof of owned facilities or a specific client project.")
+      .replace("The current site also publishes contacts in Mumbai, Singapore and Canada. Together, those facts support a credible international story while operational status, delivery models and country-specific project examples are confirmed.", "Published contacts in Mumbai, Singapore and Canada, together with collaboration for US and other international teams, support a credible cross-border story without implying a US office or unverified delivery network.");
+    if (path === "/contact/") html = html
+      .replace("The policy's domain references require reconciliation before production launch.", "The privacy notice remains under owner review.")
+      .replace("These are published contact details. Confirmation that every address is a staffed office remains an owner input.", "These are published contact details, not a claim that every address is a staffed office. US teams are welcome to enquire through the same project route.");
+    if (path === "/seo/ecommerce-seo/") html = html.replace("this review build keeps its reported figures out of SEO modules", "this site keeps its reported figures out of SEO modules");
+    if (path === "/video-production/") html = html.replace("This review build avoids unsupported package prices", "This site avoids unsupported package prices");
     if (!["/privacy-policy/","/disclaimer/","/thank-you/"].includes(path)) html = html.replace('<meta name="robots" content="noindex,nofollow">','<meta name="robots" content="index,follow">');
   }
   return html;

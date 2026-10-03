@@ -62,6 +62,11 @@ for (const file of mediaReferences) if (!existsSync(resolve(mediaDir, file))) fa
 const publicHome = await request("/", {}, {PUBLIC_SITE:"true"});
 const publicHomeHtml = await publicHome.text();
 if (!publicHomeHtml.includes('<meta name="robots" content="index,follow">')) failures.push("public mode: home is not indexable");
+if (!publicHomeHtml.includes("including with US teams") || publicHomeHtml.includes("Published contacts in Singapore, Canada and the US")) failures.push("public home: US collaboration should not imply a published US office");
+const publicAboutHtml = await (await request("/about/", {}, {PUBLIC_SITE:"true"})).text();
+if (!publicAboutHtml.includes("India and APAC") || !publicAboutHtml.includes("US and other international teams") || publicAboutHtml.includes("review build")) failures.push("public about: approved regional history or global positioning is missing");
+const publicContactHtml = await (await request("/contact/", {}, {PUBLIC_SITE:"true"})).text();
+if (!publicContactHtml.includes("US teams are welcome") || publicContactHtml.includes("before production launch")) failures.push("public contact: international enquiry or current privacy status is inaccurate");
 for (const label of ["Ad Films &amp; Video Content","Brand Communication &amp; Strategy","Creative Solutions","Digital &amp; Social","Website Development","Brand Experiences &amp; Partnerships"]) {
   if (!publicHomeHtml.includes(label)) failures.push(`home: missing main service ${label}`);
 }
@@ -86,7 +91,7 @@ if (!publicHomeHtml.includes("Copyrights Reserved Ambest Brandcom") || publicHom
 if (publicHomeHtml.includes("#c7ff33")) failures.push("brand palette: legacy green is still present");
 if (/font-weight:(700|800|900)/.test(publicHomeHtml)) failures.push("typography: bold font weight remains in rendered homepage CSS");
 if (!publicHomeHtml.includes("India + APAC experience") || !publicHomeHtml.includes("wider Asia-Pacific region")) failures.push("home: approved India + APAC experience copy is missing");
-if (!publicHomeHtml.includes("Singapore, Canada and the US")) failures.push("home: international touchpoints do not include the US");
+if (!publicHomeHtml.includes("including with US teams")) failures.push("home: international touchpoints do not include US collaboration");
 if (!publicHomeHtml.includes('class="home-hero-video"') || !publicHomeHtml.includes("AMbest-Website-Home-Page-Video.webm")) failures.push("home: original Ambest banner video is missing");
 if (!publicHomeHtml.includes('data-video-id="YaaTIMUeoNs"') || !publicHomeHtml.includes("2026 showreel")) failures.push("home: verified 2026 showreel thumbnail is missing");
 if (publicHomeHtml.includes("iframe srcdoc=")) failures.push("videos: nested scrolling thumbnail iframe remains on the homepage");
