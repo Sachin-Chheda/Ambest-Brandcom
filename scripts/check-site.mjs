@@ -1,4 +1,6 @@
 import worker from "../worker/index.js";
+import { mainServiceContent } from "../worker/main-service-content.js";
+import { seoOffers, videoOffers, digitalServices } from "../worker/content.js";
 import { existsSync, readdirSync } from "node:fs";
 import { resolve } from "node:path";
 
@@ -112,7 +114,34 @@ for (const route of requiredRoutes.filter(route => route.startsWith("/work/") &&
 }
 for (const route of requiredRoutes.filter(route => route.startsWith("/services/") && route !== "/services/")) {
   if ((pages.get(route)?.match(/class="archive-card"/g) || []).length < 3) failures.push(`${route}: service gallery needs at least three relevant images`);
+  const slug = route.split("/")[2];
+  const record = mainServiceContent[slug];
+  if (!record || record.stages.length !== 4 || record.questions.length < 3 || record.proof.length < 2) failures.push(`${route}: structured buyer guidance is incomplete`);
+  if (!pages.get(route)?.includes('class="section service-depth"') || !pages.get(route)?.includes('class="prose service-faq"')) failures.push(`${route}: buyer-fit, scope, process, evidence or FAQ sections are missing`);
+  for (const [, href] of record?.proof || []) if (!pages.get(route)?.includes(`href="${href}"`)) failures.push(`${route}: published proof link ${href} is missing`);
+  const graphs = [...(pages.get(route) || "").matchAll(/<script type="application\/ld\+json">([\s\S]*?)<\/script>/g)].map(match => JSON.parse(match[1]));
+  const nodes = graphs.flatMap(graph => graph["@graph"] || [graph]);
+  if (!nodes.some(node => node["@type"] === "Service" && node.url === `https://www.ambestbrandcom.com${route}`)) failures.push(`${route}: canonical Service structured data is missing`);
+  if (!nodes.some(node => node["@type"] === "BreadcrumbList" && node.itemListElement?.at(-1)?.item === `https://www.ambestbrandcom.com${route}`)) failures.push(`${route}: service breadcrumb structured data is missing`);
+  if (!pages.get(route)?.includes(`/get-a-quote/?service=${slug}`)) failures.push(`${route}: contextual quote link is missing`);
+  const selectedQuote = await (await request(`/get-a-quote/?service=${slug}`)).text();
+  if (!selectedQuote.includes(`<option value="${slug}" selected>`)) failures.push(`${route}: quote form does not preserve selected service`);
 }
+for (const offer of [...seoOffers, ...videoOffers]) {
+  const division = offer.id.startsWith("seo-") ? "seo" : "video-production";
+  const html = await (await request(`/get-a-quote/?division=${division}&offer=${offer.id}`)).text();
+  if (!html.includes(`<option value="${offer.id}" selected>${offer.title.replaceAll("&", "&amp;")}</option>`)) failures.push(`quote form: ${offer.id} CTA does not preserve the offer selection`);
+}
+for (const [name,,,id] of digitalServices) {
+  const html = await (await request(`/get-a-quote/?division=digital-marketing&service=${id}`)).text();
+  if (!html.includes(`<option value="${id}" selected>${name.replaceAll("&", "&amp;")}</option>`)) failures.push(`quote form: ${id} CTA does not preserve the digital service selection`);
+}
+for (const division of ["seo", "video-production", "digital-marketing"]) {
+  const html = await (await request(`/get-a-quote/?division=${division}`)).text();
+  if (!html.includes(`<option value="${division}" selected>`)) failures.push(`quote form: ${division} CTA does not preserve the division selection`);
+}
+const invalidContextHtml = await (await request("/get-a-quote/?offer=%3Cscript%3E")).text();
+if (!invalidContextHtml.includes('<option value="not-sure" selected>') || invalidContextHtml.includes('<script>"')) failures.push("quote form: invalid preselection should be ignored");
 const filmsHtml = pages.get("/video-production/results/") || "";
 const videoOverviewHtml = pages.get("/video-production/") || "";
 for (const route of ["digital-ad-films", "brand-films", "corporate-communication-videos", "corporate-films", "brand-anthem-videos", "micro-drama", "ai-video-production", "testimonial-videos", "explainer-videos", "2d-animation", "product-videos", "social-media-videos", "drone-videography", "commercial-photography", "video-podcasts", "short-films"]) {

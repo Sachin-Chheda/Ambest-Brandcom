@@ -2,7 +2,7 @@
 
 This repository contains a dependency-free Cloudflare Worker site for Ambest Brandcom. It positions Ambest as a Mumbai-rooted brand communications partner for global companies through six primary services: Ad Films & Video Content, Brand Communication & Strategy, Creative Solutions, Digital & Social, Website Development, and Brand Experiences & Partnerships. Detailed SEO, Video Production and Digital Marketing routes remain as supporting capabilities and evidence paths. The site also includes ten visually led canonical project records, six verified film embeds, migrated editorial routes, direct legacy redirects, a guarded quote endpoint, sitemap/robots behavior, structured data and a real 404 response.
 
-The public deployment is indexable on the approved canonical hostname. Production lead delivery remains guarded until Ambest supplies and tests approved Turnstile and lead-webhook credentials.
+The public deployment is indexable on the approved canonical hostname. The owner-selected enquiry flow currently prepares a message for the visitor's email application; the website does not send or store that message. Automated delivery remains guarded until Ambest approves and tests an email integration.
 
 ## Project structure
 
@@ -44,7 +44,7 @@ The checks exercise every required public route, crawlable internal destinations
 
 The `POST /api/quote` endpoint enforces same-origin submission, JSON content type, payload and field limits, required-field and URL validation, an allowlisted service registry, a honeypot, server-side Turnstile verification, idempotency and HTTPS webhook delivery. It returns success only after the configured destination accepts the lead. It never fetches a user-supplied website URL.
 
-Configure the variables listed in `.env.example` through the Sites environment interface. `DEVELOPMENT_MODE=true` exists only for automated local testing and must never be enabled in production.
+Configure the variables listed in `.env.example` in the Cloudflare Worker environment only if automated delivery is reactivated. `LEAD_DELIVERY_VERIFIED=true` must not be set until a real destination and Turnstile check have been tested. `DEVELOPMENT_MODE=true` exists only for automated local testing and must never be enabled in production.
 
 ## Production release
 
@@ -60,4 +60,4 @@ pnpm cloudflare:check
 pnpm deploy:cloudflare
 ```
 
-The quote form is prepared for Cloudflare Email Service delivery to `sachin@ambestmedia.com` through the restricted `EMAIL` binding. Onboard `ambestbrandcom.com` for Email Sending, verify the destination address, create a Turnstile widget for `www.ambestbrandcom.com`, add its public key as `TURNSTILE_SITE_KEY`, and store its secret as the encrypted Worker secret `TURNSTILE_SECRET_KEY`. The endpoint validates every Turnstile token server-side, including its action and hostname, before sending a transactional enquiry email. Until those Cloudflare account settings are complete, the form shows the direct email fallback instead of claiming that an enquiry was sent.
+The quote form currently prepares an email to `sachin@ambestmedia.com`. The visitor must press Send in their email application; no website delivery or inbox receipt is claimed. Contextual quote links preserve the selected main service or specialist offer without adding more required form fields. A future approved Cloudflare Email Service setup would require a verified sender/destination and Turnstile keys. The endpoint validates Turnstile tokens server-side before sending, but this automated mode is intentionally off until an end-to-end inbox test succeeds.

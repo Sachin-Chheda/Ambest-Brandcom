@@ -1,5 +1,7 @@
 # QA report
 
+> Historical 22 September review record. For the current six-service implementation pass and its actual checks, see [2026-10-06-brief-implementation.md](2026-10-06-brief-implementation.md). Some launch-state statements below predate the live `.com` deployment and must not be read as its current status.
+
 Review date: 22 September 2026
 
 ## Automated checks passed
