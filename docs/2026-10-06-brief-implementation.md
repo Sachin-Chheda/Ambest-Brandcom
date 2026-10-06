@@ -38,4 +38,6 @@ Specialist quote links now carry all eight SEO/video offer choices and seven dig
 - Search-volume / difficulty values remain `not_retrieved` without an authorized quantitative data source. Rankings and AI citation outcomes are not claimed.
 - Complete the wider browser matrix (360, 768, 1024 and 1440 px), keyboard/screen-reader checks, real-user performance and actual enquiry-delivery checks before claiming full acceptance.
 
-This pass is prepared for code review. It does not itself deploy a production change or alter DNS, Cloudflare secrets or email settings.
+## Publication check
+
+The site update was published from GitHub commit `223d27daf2d9daac41b96acb99404eafcbeff199`. The GitHub `Site checks` workflow completed successfully. The live `.com` service page and specialist quote preselection returned HTTP 200 with the new content; the live audit found 72 sitemap pages, 85 referenced media URLs and no HTTP failures. This did not alter DNS, Cloudflare secrets or email settings. It does not verify that a visitor's prepared email reached Ambest.
