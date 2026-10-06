@@ -22,6 +22,8 @@ Each primary route now also emits page-specific `Service` and `BreadcrumbList` s
 
 Specialist quote links now carry all eight SEO/video offer choices and seven digital-service choices into the same short enquiry form. A division-only link is also recognized. Unknown query values are ignored. These choices change the preselected label, not the number of required fields or the owner-selected direct-email delivery mode.
 
+A structured-data audit exposed doubled slashes in some inherited breadcrumb URLs. Canonical-host URLs in the rendered markup are now normalized, with a route-level regression check. The unused `/thank-you/` route remains a real, non-indexable 404; public robots rules no longer block crawlers from observing that response.
+
 ## Verification on 6 October 2026
 
 - `node scripts/check-site.mjs`: passed; 74 routes and 77 internal destinations checked, including form validation and idempotency tests.
@@ -40,4 +42,4 @@ Specialist quote links now carry all eight SEO/video offer choices and seven dig
 
 ## Publication check
 
-The site update was published from GitHub commit `223d27daf2d9daac41b96acb99404eafcbeff199`. The GitHub `Site checks` workflow completed successfully. The live `.com` service page and specialist quote preselection returned HTTP 200 with the new content; the live audit found 72 sitemap pages, 85 referenced media URLs and no HTTP failures. This did not alter DNS, Cloudflare secrets or email settings. It does not verify that a visitor's prepared email reached Ambest.
+The first site update was published from GitHub commit `223d27daf2d9daac41b96acb99404eafcbeff199`. The GitHub `Site checks` workflow completed successfully. The live `.com` service page and specialist quote preselection returned HTTP 200 with the new content; the live audit found 72 sitemap pages, 85 referenced media URLs and no HTTP failures. This did not alter DNS, Cloudflare secrets or email settings. It does not verify that a visitor's prepared email reached Ambest. The structured-data and robots correction above is covered by the subsequently updated route tests.

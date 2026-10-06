@@ -29,6 +29,7 @@ for (const route of requiredRoutes) {
   else if (titles.has(title)) failures.push(`${route}: duplicate title with ${titles.get(title)}`);
   else titles.set(title, route);
   if (!html.includes('<link rel="canonical" href="https://www.ambestbrandcom.com')) failures.push(`${route}: incorrect canonical host`);
+  if (/https:\/\/www\.ambestbrandcom\.com\/[^"'<>\s]*\/\//.test(html)) failures.push(`${route}: doubled slash in a production URL`);
   if (!html.includes('<meta name="robots" content="noindex,nofollow">')) failures.push(`${route}: private preview must be noindex`);
   if ((html.match(/<h1[ >]/g) || []).length !== 1) failures.push(`${route}: expected one H1`);
   if (!html.includes('class="skip"') || !html.includes('<main id="main">') || !html.includes('aria-label="Primary"')) failures.push(`${route}: missing shared navigation landmarks`);
@@ -199,7 +200,9 @@ if (!publicMapText.includes("/video-production/brand-anthem-videos/") || publicM
 if (!publicMapText.includes("/brand-creative/logo-visual-identity/")) failures.push("public sitemap missing brand and creative routes");
 if (!publicMapText.includes("https://www.ambestbrandcom.com/seo/how-it-works/")) failures.push("public sitemap uses the wrong canonical host");
 const publicRobots = await (await request("/robots.txt", {}, {PUBLIC_SITE:"true"})).text();
-if (!publicRobots.includes("Sitemap: https://www.ambestbrandcom.com/sitemap.xml") || publicRobots.includes("Disallow: /\n")) failures.push("public robots.txt is not crawlable or uses the wrong sitemap host");
+if (!publicRobots.includes("Sitemap: https://www.ambestbrandcom.com/sitemap.xml") || publicRobots.includes("Disallow: /\n") || publicRobots.includes("Disallow: /thank-you/")) failures.push("public robots.txt blocks a noindex page or uses the wrong sitemap host");
+const thankYouPage = await request("/thank-you/", {}, {PUBLIC_SITE:"true"});
+if (thankYouPage.status !== 404 || thankYouPage.headers.get("x-robots-tag") !== "noindex") failures.push("unused thank-you route must return a genuine non-indexable 404");
 const directQuote = await request("/get-a-quote/", {}, {PUBLIC_SITE:"true",TURNSTILE_SITE_KEY:"site-key",TURNSTILE_SECRET_KEY:"secret-key",EMAIL:{send:async()=>({messageId:"render-test"})}});
 const directQuoteHtml = await directQuote.text();
 if (!directQuoteHtml.includes('data-delivery-mode="email-app"') || !directQuoteHtml.includes('Prepare enquiry email') || !directQuoteHtml.includes('The website does not send or store your enquiry.') || directQuoteHtml.includes('class="cf-turnstile"')) failures.push("quote form: direct-email mode should be honest and should not require Turnstile");

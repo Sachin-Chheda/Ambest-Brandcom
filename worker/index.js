@@ -448,9 +448,17 @@ function reworkHome(html) {
   return html;
 }
 
+function normalizeCanonicalPaths(html) {
+  let previous;
+  do {
+    previous = html;
+    html = html.replace(/https:\/\/www\.ambestbrandcom\.com\/([^"'<>\s]*?)\/\//g, (_, prefix) => `${origin}/${prefix}/`);
+  } while (html !== previous);
+  return html;
+}
+
 function rebrand(html, path, publicSite) {
-  html = html
-    .replaceAll("https://ambestmedia.com", origin)
+  html = normalizeCanonicalPaths(html.replaceAll("https://ambestmedia.com", origin))
     .replace('"name":"Ambest Brandcom","legalName":"Ambest Media Company"', `"name":"Ambest Brandcom","sameAs":${JSON.stringify(socialProfiles.map(({url}) => url))},"legalName":"Ambest Media Company"`)
     .replaceAll("sachin@ambestbrandcom.in", defaultLeadRecipient)
     .replaceAll("#c7ff33", "#1900f5")
@@ -780,7 +788,7 @@ export default {
       return new Response("Not found",{status:404,headers:{"cache-control":"no-store"}});
     }
     if (path === "/favicon.svg") return new Response(request.method==="HEAD"?null:favicon,{headers:{"content-type":"image/svg+xml","cache-control":"public,max-age=86400"}});
-    if (path === "/robots.txt") { const body=publicSite?`User-agent: *\nDisallow: /thank-you/\nDisallow: /api/\nSitemap: ${origin}/sitemap.xml\n`:"User-agent: *\nDisallow: /\n"; return new Response(request.method==="HEAD"?null:body,{headers:{"content-type":"text/plain; charset=utf-8","cache-control":"public,max-age=300"}}); }
+    if (path === "/robots.txt") { const body=publicSite?`User-agent: *\nDisallow: /api/\nSitemap: ${origin}/sitemap.xml\n`:"User-agent: *\nDisallow: /\n"; return new Response(request.method==="HEAD"?null:body,{headers:{"content-type":"text/plain; charset=utf-8","cache-control":"public,max-age=300"}}); }
     if (path === "/sitemap.xml") { const routes=publicSite?[...new Set(Object.keys(generatedPages).concat(serviceRoutes,videoServiceRoutes,brandCreativeRoutes))].filter(route=>!["/privacy-policy/","/disclaimer/",...Object.keys(extraRedirects)].includes(route)):[]; const body=`<?xml version="1.0" encoding="UTF-8"?><urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">${routes.map(route=>`<url><loc>${origin}${route}</loc></url>`).join("")}</urlset>`; return new Response(request.method==="HEAD"?null:body,{headers:{"content-type":"application/xml; charset=utf-8","cache-control":"public,max-age=300"}}); }
     const service = mainServices.find(item => path === `/services/${item.id}/`);
     const videoService = videoServices.find(item => path === `/video-production/${item.slug}/`);
